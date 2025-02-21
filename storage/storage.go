@@ -1,5 +1,13 @@
 package storage
 
+const FilePerm = 0644
+
+type FileIoType = byte
+
+const (
+	StandardFIO FileIoType = iota
+)
+
 type StorageManager interface {
 	// Read from file with the position
 	Read([]byte, int64) (int, error)
