@@ -15,9 +15,10 @@ limitations under the License.
 package file
 
 import (
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewLocalFileManager(t *testing.T) {
@@ -25,8 +26,33 @@ func TestNewLocalFileManager(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, f)
 
-	err = os.Remove("/tmp/local-file-test")
-	if err != nil {
-		panic(err)
-	}
+	// Use t.Cleanup for automatic cleanup after test
+	t.Cleanup(func() {
+		f.Close()
+		os.Remove("/tmp/local-file-test")
+	})
+}
+
+func TestFileIO_Write(t *testing.T) {
+	f, err := NewLocalFileManager("/tmp/local-file-test")
+	assert.Nil(t, err)
+	assert.NotNil(t, f)
+
+	// Use defer for automatic cleanup
+	defer func() {
+		f.Close()
+		os.Remove("/tmp/local-file-test")
+	}()
+
+	n, err := f.Write([]byte("hello world"))
+	assert.Nil(t, err)
+	assert.Equal(t, 11, n)
+
+	n, err = f.Write([]byte("\nhello world"))
+	assert.Nil(t, err)
+	assert.Equal(t, 12, n)
+
+	n, err = f.Write([]byte(nil))
+	assert.Nil(t, err)
+	assert.Equal(t, 0, n)
 }
