@@ -7,7 +7,34 @@ on:
     branches: master
 
 jobs:
-  test:
+  check-license:
+    name: Verify Apache License in Go Files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Check License in Go Files
+        run: |
+          LICENSE_TEXT="Licensed under the Apache License, Version 2.0"
+          MISSING_LICENSE_FILES=()
+          
+          PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+          for file in $(find "$PROJECT_ROOT" -type f -name '*.go'); do
+            if ! grep -q "$LICENSE_TEXT" "$file"; then
+              MISSING_LICENSE_FILES+=("$file")
+            fi
+          done
+
+          if [ ${#MISSING_LICENSE_FILES[@]} -ne 0 ]; then
+            echo "The following files are missing the Apache license header:"
+            printf '%s\n' "${MISSING_LICENSE_FILES[@]}"
+            exit 1
+          fi
+
+  unit-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -30,4 +57,4 @@ jobs:
         with:
           version: v1.54.0
           args: --timeout=5m
-          skip-cache: true 
+          skip-cache: true
