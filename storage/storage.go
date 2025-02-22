@@ -23,10 +23,12 @@ const (
 )
 
 type StorageManager interface {
-	// Read from file with the position
+	// Read from storage with the position
+	// Read len([]byte) bytes, return n of read bytes size, and error if any
+	// return EOF error if reach end of storage, len([]byte) > remaining size of storage
 	Read([]byte, int64) (int, error)
 
-	// Write to the file with the position
+	// Write to the storage with the position
 	Write([]byte) (int, error)
 
 	// Flush refresh memo data into storage
@@ -35,6 +37,6 @@ type StorageManager interface {
 	// Close the storage manager
 	Close() error
 
-	// Size Get File size
+	// Size Get storage size
 	Size() (int64, error)
 }
