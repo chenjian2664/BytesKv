@@ -14,6 +14,11 @@ limitations under the License.
 
 package core
 
+import (
+	"encoding/binary"
+	"hash/crc32"
+)
+
 type RecordType byte
 
 const (
@@ -24,22 +29,58 @@ const (
 )
 
 // Record the record that use between memo and storage
+// record:
+//  1. header: crc, type, keySize, valueSize
+//  2. data: key, value
 type Record struct {
 	Key   Bytes
 	Value Bytes
 	Type  RecordType
 }
 
-// crc type keySize valueSize
-// 4    1    5 			5
-// const maxLogRecordHeaderSize = 4 + 1 + binary.MaxVarintLen32*2 = 15
+func (r Record) packHeader() Bytes {
+	header := make(Bytes, maxLogRecordHeaderSize)
+	// type
+	header[4] = byte(r.Type)
 
-// RecordHeader the header of the record
-type RecordHeader struct {
-	Crc       uint32
-	Typ       RecordType
-	KeySize   uint32
-	ValueSize uint32
+	// Write keySize
+	var index = 5
+	index += binary.PutVarint(header[index:], int64(r.Key.Size()))
+	// Write valueSize
+	index += binary.PutVarint(header[index:], int64(r.Key.Size()))
+
+	// Write crc
+	crc := crc32.ChecksumIEEE(header[4:])
+	// TODO: support BigEndian as well
+	binary.LittleEndian.PutUint32(header[:4], crc)
+
+	return header[:index]
+}
+
+func (r Record) pack() Bytes {
+	header := r.packHeader()
+	//
+	record := make(Bytes, header.Size()+r.Key.Size()+r.Value.Size())
+	copy(record, header)
+
+	var index = header.Size()
+	// copy key data
+	index += uint32(copy(record[index:], r.Key))
+	// copy value data
+	index += uint32(copy(record[index:], r.Value))
+
+	// shouldn't
+	if index != record.Size() {
+		panic("Error data copying")
+	}
+
+	crc := crc32.ChecksumIEEE(record[4:])
+	binary.LittleEndian.PutUint32(record[:4], crc)
+	return record
+}
+
+func BytesToRecord(bts Bytes) *Record {
+	return nil
 }
 
 // RecordPosition the position of the record
