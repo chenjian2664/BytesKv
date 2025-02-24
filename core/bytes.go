@@ -21,3 +21,11 @@ type Bytes []byte
 func (bts Bytes) Compare(other Bytes) int {
 	return bytes.Compare(bts, other)
 }
+
+func (bts Bytes) Size() uint32 {
+	return uint32(len(bts))
+}
+
+type BytesUnit interface {
+	pack() Bytes
+}
