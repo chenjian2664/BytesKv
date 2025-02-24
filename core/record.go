@@ -17,6 +17,7 @@ package core
 import (
 	"encoding/binary"
 	"hash/crc32"
+	"strconv"
 )
 
 type RecordType byte
@@ -47,7 +48,7 @@ func (r *Record) packHeader() Bytes {
 	var index = 5
 	index += binary.PutVarint(header[index:], int64(r.Key.Size()))
 	// Write valueSize
-	index += binary.PutVarint(header[index:], int64(r.Key.Size()))
+	index += binary.PutVarint(header[index:], int64(r.Value.Size()))
 
 	// Write crc
 	crc := crc32.ChecksumIEEE(header[4:])
@@ -83,7 +84,27 @@ func (r *Record) pack() Bytes {
 }
 
 func BytesToRecord(bts Bytes) *Record {
-	return nil
+	header, index := BytesToHeader(bts)
+	// add crc check by default
+	if header.Crc != crc32.ChecksumIEEE(bts[4:]) {
+		panic("Corrupted data, crc not match")
+	}
+
+	key := bts[index : index+int(header.KeySize)]
+	index += int(header.KeySize)
+
+	// TODO: add error handling
+	if index+int(header.ValueSize) != int(bts.Size()) {
+		panic("Corrupted data:" + strconv.Itoa(index) + "," + strconv.Itoa(int(bts.Size())) + ",valueSize: " + strconv.Itoa(int(header.ValueSize)))
+	}
+
+	value := bts[index:]
+
+	return &Record{
+		key,
+		value,
+		header.Typ,
+	}
 }
 
 // RecordPosition the position of the record

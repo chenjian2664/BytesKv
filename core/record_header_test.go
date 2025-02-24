@@ -21,6 +21,7 @@ import (
 )
 
 func TestBytesToHeader(t *testing.T) {
+	// covered by record test
 }
 
 func TestHeaderToBytes(t *testing.T) {
