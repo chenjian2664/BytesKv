@@ -18,14 +18,10 @@ const FilePerm = 0644
 
 type FileIoType = byte
 
-const (
-	StandardFIO FileIoType = iota
-)
-
 type StorageManager interface {
-	// Read from storage with the position
+	// Read from storage with the position(int64)
 	// Read len([]byte) bytes, return n of read bytes size, and error if any
-	// return EOF error if reach end of storage, len([]byte) > remaining size of storage
+	// return EOF error if reach end of storage when len([]byte) > remaining size of storage
 	Read([]byte, int64) (int, error)
 
 	// Write to the storage with the position

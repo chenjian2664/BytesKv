@@ -1,9 +1,3 @@
-#!/bin/bash
-
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-
-find "$PROJECT_ROOT" -name "*.go" -type f | while read -r file; do
-    read -r -d '' LICENSE << 'EOF'
 /*
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,14 +12,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-EOF
+package core
 
-    if ! grep -q "Apache License" "$file"; then
-        # Create temporary file with license and original content
-        echo "$LICENSE" > temp
-        echo "" >> temp  # Add an extra newline
-        cat "$file" >> temp
-        mv temp "$file"
-        echo "Added license to $file"
-    fi
-done
+import "bytes"
+
+type Bytes []byte
+
+func (bts Bytes) Compare(other Bytes) int {
+	return bytes.Compare(bts, other)
+}
