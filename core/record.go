@@ -22,9 +22,9 @@ import (
 type RecordType byte
 
 const (
-	// RecordNormal normal append data
+	// Normal normal append data
 	Normal RecordType = iota
-	// RecordDeleted the record is deleted
+	// Deleted the record is deleted
 	Deleted
 )
 
@@ -38,7 +38,7 @@ type Record struct {
 	Type  RecordType
 }
 
-func (r Record) packHeader() Bytes {
+func (r *Record) packHeader() Bytes {
 	header := make(Bytes, maxLogRecordHeaderSize)
 	// type
 	header[4] = byte(r.Type)
@@ -57,11 +57,14 @@ func (r Record) packHeader() Bytes {
 	return header[:index]
 }
 
-func (r Record) pack() Bytes {
+func (r *Record) pack() Bytes {
 	header := r.packHeader()
-	//
 	record := make(Bytes, header.Size()+r.Key.Size()+r.Value.Size())
 	copy(record, header)
+
+	if Bytes(record[:header.Size()]).Compare(header) != 0 {
+		panic("Error data copy")
+	}
 
 	var index = header.Size()
 	// copy key data

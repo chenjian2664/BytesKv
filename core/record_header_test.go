@@ -36,6 +36,7 @@ func testHeaderToBytes(t *testing.T, key, value Bytes) {
 	valueSize, sz := binary.Varint(bs[index:])
 	assert.Equal(t, int64(rh.ValueSize), valueSize)
 	index += sz
+	assert.Equal(t, index, len(bs))
 
 	// Deleted type
 	rh = RecordHeader{
@@ -56,5 +57,7 @@ func testHeaderToBytes(t *testing.T, key, value Bytes) {
 	index += sz
 	valueSize, sz = binary.Varint(bs[index:])
 	assert.Equal(t, int64(rh.ValueSize), valueSize)
+
 	index += sz
+	assert.Equal(t, index, len(bs))
 }
