@@ -49,7 +49,7 @@ jobs:
           args: --timeout=5m
           skip-cache: true
 
-  unit-test:
+  core:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -57,11 +57,24 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: '1.21'
-
       - name: Install dependencies
         run: |
           go mod download
           go mod tidy
+      - name: Test storage package
+        run: go test -v ./core/...
 
-      - name: Run tests
-        run: go test -v ./...
+  storage-local-file:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      - name: Install dependencies
+        run: |
+          go mod download
+          go mod tidy
+      - name: Test file package
+        run: go test -v ./storage/file/...
