@@ -22,10 +22,10 @@ import (
 type RecordType byte
 
 const (
-	// LogRecordNormal normal append data
-	LogRecordNormal RecordType = iota
-	// LogRecordDeleted the record is deleted
-	LogRecordDeleted
+	// RecordNormal normal append data
+	Normal RecordType = iota
+	// RecordDeleted the record is deleted
+	Deleted
 )
 
 // Record the record that use between memo and storage
