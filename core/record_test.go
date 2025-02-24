@@ -21,6 +21,29 @@ import (
 	"testing"
 )
 
+func TestBytesToRecord(t *testing.T) {
+	testBytesToRecord(t, Bytes{}, Bytes{}, Normal)
+	testBytesToRecord(t, Bytes("hello"), Bytes("world"), Normal)
+	testBytesToRecord(t, Bytes("hello"), Bytes("world"), Deleted)
+	testBytesToRecord(t, Bytes("你好"), Bytes("吃了吗"), Normal)
+	testBytesToRecord(t, Bytes("你好"), Bytes("吃了吗"), Deleted)
+	testBytesToRecord(t, Bytes("😂"), Bytes("😂xxx"), Normal)
+	testBytesToRecord(t, Bytes("😂"), Bytes("😂xxx"), Deleted)
+}
+
+func testBytesToRecord(t *testing.T, key, value Bytes, recordType RecordType) {
+	record := &Record{
+		key,
+		value,
+		recordType,
+	}
+
+	bts := record.pack()
+	unpack := BytesToRecord(bts)
+	assert.Equal(t, record.packHeader(), unpack.packHeader())
+	assert.Equal(t, record, unpack)
+}
+
 func TestRecordToBytesCrc(t *testing.T) {
 	key := Bytes("hello")
 	value := Bytes("world")

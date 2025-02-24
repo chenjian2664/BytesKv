@@ -14,7 +14,9 @@ limitations under the License.
 
 package core
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+)
 
 // crc type keySize valueSize
 // 4    1    5 			5		= 15
@@ -44,6 +46,20 @@ func (rh *RecordHeader) pack() Bytes {
 	return header[:index]
 }
 
-func BytesToHeader(b Bytes) *RecordHeader {
-	return nil
+func BytesToHeader(bs Bytes) (*RecordHeader, int) {
+	crc := binary.LittleEndian.Uint32(bs[:4])
+	typ := RecordType(bs[4])
+
+	index := 5
+	keySize, n := binary.Varint(bs[index:])
+	index += n
+	valueSize, n := binary.Varint(bs[index:])
+	index += n
+
+	return &RecordHeader{
+		Crc:       crc,
+		Typ:       typ,
+		KeySize:   uint32(keySize),
+		ValueSize: uint32(valueSize),
+	}, index
 }
