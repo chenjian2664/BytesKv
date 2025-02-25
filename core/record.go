@@ -106,11 +106,3 @@ func BytesToRecord(bts Bytes) *Record {
 		header.Typ,
 	}
 }
-
-// RecordPosition the position of the record
-// use it to read actual data from storage
-type RecordPosition struct {
-	StorageId Bytes
-	Position  uint64
-	Size      uint32
-}
