@@ -2,7 +2,7 @@
 
 BytesDB is a database based on LSM tree engine.
 
-It is designed for high volume and easy to extended to develop distributed.
+It is designed for high volume and easy to extended to distributed.
 
 ## Status
 
