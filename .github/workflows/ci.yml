@@ -78,3 +78,18 @@ jobs:
           go mod tidy
       - name: Test file package
         run: go test -v ./storage/file/...
+
+  memo-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      - name: Install dependencies
+        run: |
+          go mod download
+          go mod tidy
+      - name: Test file package
+        run: go test -v ./memo/...
