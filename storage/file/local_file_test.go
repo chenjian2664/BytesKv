@@ -21,22 +21,23 @@ import (
 )
 
 // TODO: add close() test
+// TODO: add write file exceed maxSize
 
-func TestNewLocalFileManager(t *testing.T) {
+func TestNewLocalFileStorage(t *testing.T) {
 	fileName := "/tmp/local-file-manager-test"
-	f, err := NewLocalFileManager(fileName)
+	f, err := NewLocalFileStorage(fileName, "public", "test")
 	assert.Nil(t, err)
 	assert.NotNil(t, f)
 
 	t.Cleanup(func() {
 		f.Close()
-		os.Remove(fileName)
+		os.RemoveAll(fileName)
 	})
 }
 
 func TestFileIO_Write(t *testing.T) {
 	fileName := "/tmp/local-file-write-test"
-	f, err := NewLocalFileManager(fileName)
+	f, err := NewLocalFileStorage(fileName, "public", "test")
 	assert.Nil(t, err)
 	assert.NotNil(t, f)
 
@@ -72,13 +73,13 @@ func TestFileIO_Write(t *testing.T) {
 
 func TestFileIO_Read(t *testing.T) {
 	fileName := "/tmp/local-file-read-test"
-	f, err := NewLocalFileManager(fileName)
+	f, err := NewLocalFileStorage(fileName, "public", "test")
 	assert.Nil(t, err)
 	assert.NotNil(t, f)
 
 	t.Cleanup(func() {
 		f.Close()
-		os.Remove(fileName)
+		os.RemoveAll(fileName)
 	})
 
 	idx := int64(0)
@@ -116,13 +117,13 @@ func TestFileIO_Read(t *testing.T) {
 
 func TestFileIO_Read_Not_Equal_Buffer_Size(t *testing.T) {
 	fileName := "/tmp/local-file-read-not-equal-buffer-size-test"
-	f, err := NewLocalFileManager(fileName)
+	f, err := NewLocalFileStorage(fileName, "public", "test")
 	assert.Nil(t, err)
 	assert.NotNil(t, f)
 
 	t.Cleanup(func() {
 		f.Close()
-		os.Remove(fileName)
+		os.RemoveAll(fileName)
 	})
 
 	bs := []byte("hello world")
@@ -165,13 +166,13 @@ func TestFileIO_Read_Not_Equal_Buffer_Size(t *testing.T) {
 
 func TestFileIO_Flush(t *testing.T) {
 	fileName := "/tmp/local-file-sync-test"
-	f, err := NewLocalFileManager(fileName)
+	f, err := NewLocalFileStorage(fileName, "public", "test")
 	assert.Nil(t, err)
 	assert.NotNil(t, f)
 
 	t.Cleanup(func() {
 		f.Close()
-		os.Remove(fileName)
+		os.RemoveAll(fileName)
 	})
 
 	bs := []byte("hello world")
@@ -180,7 +181,7 @@ func TestFileIO_Flush(t *testing.T) {
 	err = f.Flush()
 	assert.Nil(t, err)
 
-	f, err = NewLocalFileManager(fileName)
+	f, err = NewLocalFileStorage(fileName, "public", "test")
 	assert.Nil(t, err)
 	assert.NotNil(t, f)
 

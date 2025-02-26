@@ -31,8 +31,11 @@ func TestIndexManager_Put(t *testing.T) {
 	assert.NotNil(t, im)
 
 	pos := &core.RecordPosition{
-		StorageId: core.Bytes("storageid"),
-		Size:      uint32(10),
+		StorageId: core.StorageId{
+			Schema:    "public",
+			Table:     "test",
+			StorageId: "000000000001.data"},
+		Size: 10,
 	}
 
 	old, err := im.Put(core.Bytes("hello"), pos)
@@ -57,8 +60,11 @@ func TestIndexManager_Get(t *testing.T) {
 	assert.NotNil(t, im)
 
 	pos := &core.RecordPosition{
-		StorageId: core.Bytes("storageid"),
-		Size:      uint32(10),
+		StorageId: core.StorageId{
+			Schema:    "public",
+			Table:     "test",
+			StorageId: "000000000001.data"},
+		Size: 10,
 	}
 
 	old, err := im.Put(core.Bytes("hello"), pos)

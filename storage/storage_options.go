@@ -12,18 +12,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package core
+package storage
 
-// RecordPosition the position of the record
-// use it to read actual data from storage
-type RecordPosition struct {
-	StorageId StorageId
-	Position  int64
-	Size      int
-}
+// configurations
+// should be kept in metadata
 
-type StorageId struct {
-	Schema    string
-	Table     string
-	StorageId string
+// reserved configs:
+//
+// bytes.schema.path.public the default path that table will belong to `public` schema
+// bytes.schema.type.public the default type that will create under `public` schema
+// bytes.schema.per.max-size.public the default maxSize(bytes) for each storage unit
+
+type StorageOptions struct {
+	// schema -> path
+	rootPaths map[string]string
 }

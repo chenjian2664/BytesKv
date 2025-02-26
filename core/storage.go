@@ -12,20 +12,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package storage
+package core
 
 const FilePerm = 0644
 
-type FileIoType = byte
-
-type StorageManager interface {
+// Storage each Storage is indicated by StorageId by caller
+type Storage interface {
 	// Read from storage with the position(int64)
 	// Read len([]byte) bytes, return n of read bytes size, and error if any
 	// return EOF error if reach end of storage when len([]byte) > remaining size of storage
-	Read([]byte, int64) (int, error)
+	Read(Bytes, int64) (int, error)
 
 	// Write to the storage with the position
-	Write([]byte) (int, error)
+	Write(Bytes) (int, error)
 
 	// Flush refresh memo data into storage
 	Flush() error
@@ -33,6 +32,9 @@ type StorageManager interface {
 	// Close the storage manager
 	Close() error
 
-	// Size Get storage size
+	// Size Get storage size, note this only the one of the storage unit size
+	// not the whole dir of storage size
 	Size() (int64, error)
+
+	CurrentStorageId() StorageId
 }
