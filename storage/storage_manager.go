@@ -47,19 +47,58 @@ func loadStorageOptions() StorageOptions {
 
 func (sm *StorageManager) Read(position core.RecordPosition) *core.Record {
 	sid := position.StorageId
-	if _, ok := sm.storages[sid]; !ok {
-		sm.initializeStorage(Local_File, sid)
+	storage := sm.resolveStorage(sid)
+
+	// TODO: consider shall we reader header separately, instead of read whole record size
+	bytes := make(core.Bytes, position.Size)
+	_, err := storage.Read(bytes, position.Position)
+	if err != nil {
+		panic(err)
 	}
-	// TODO
-	return nil
+
+	return core.BytesToRecord(bytes)
 }
 
 // append
-func (sm *StorageManager) Write(record core.Record) core.RecordPosition {
-	return core.RecordPosition{}
+func (sm *StorageManager) Write(sid core.StorageId, record *core.Record) core.RecordPosition {
+	storage := sm.resolveStorage(sid)
+	bytes := record.Pack()
+	write, err := storage.Write(bytes)
+	if err != nil {
+		panic(err)
+	}
+
+	// TODO: maybe we could record the stats here instead of ask storage everytime
+	sz, _ := storage.Size()
+
+	return core.RecordPosition{
+		StorageId: sid,
+		Position:  sz - int64(write),
+		Size:      write,
+	}
 }
 
-func (sm *StorageManager) Delete(key core.Bytes) {
+func (sm *StorageManager) Delete(sid core.StorageId, key core.Bytes) core.RecordPosition {
+	record := &core.Record{
+		Key:   key,
+		Value: core.Bytes{},
+		Type:  core.Deleted,
+	}
+	return sm.Write(sid, record)
+}
+
+func (sm *StorageManager) RemoveStorageData(sid core.StorageId) {
+	_ = sm.resolveStorage(sid).RemoveAll()
+}
+
+func (sm *StorageManager) resolveStorage(sid core.StorageId) core.Storage {
+	if _, ok := sm.storages[sid]; !ok {
+		// TODO: get storageType by StorageId, now just support Local_File
+		sm.initializeStorage(Local_File, sid)
+	}
+
+	storage := sm.storages[sid]
+	return storage
 }
 
 func (sm *StorageManager) initializeStorage(storageType StorageType, storageId core.StorageId) {
@@ -74,7 +113,7 @@ func (sm *StorageManager) initializeStorage(storageType StorageType, storageId c
 		var path string
 		if root, ok := sm.options.rootPaths[storageId.Schema]; !ok {
 			// TODO: add it into options
-			path = "/var/bytes_db/warehouse"
+			path = "/tmp/bytes_db/warehouse"
 		} else {
 			path = root
 		}

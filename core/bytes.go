@@ -27,5 +27,5 @@ func (bts Bytes) Size() uint32 {
 }
 
 type BytesUnit interface {
-	pack() Bytes
+	Pack() Bytes
 }

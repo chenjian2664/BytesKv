@@ -37,4 +37,7 @@ type Storage interface {
 	Size() (int64, error)
 
 	CurrentStorageId() StorageId
+
+	// Note: this is only used for the test purpose
+	RemoveAll() error
 }

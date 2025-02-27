@@ -39,7 +39,7 @@ func testHeaderToBytes(t *testing.T, key, value Bytes) {
 		value.Size(),
 	}
 
-	bs := rh.pack()
+	bs := rh.Pack()
 	assert.NotNil(t, bs)
 
 	index := 4
@@ -61,7 +61,7 @@ func testHeaderToBytes(t *testing.T, key, value Bytes) {
 		value.Size(),
 	}
 
-	bs = rh.pack()
+	bs = rh.Pack()
 	assert.NotNil(t, bs)
 
 	index = 4
