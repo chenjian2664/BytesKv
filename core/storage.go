@@ -26,7 +26,7 @@ type Storage interface {
 	// Write to the storage with the position
 	Write(Bytes) (int, error)
 
-	// Flush refresh memo data into storage
+	// Flush refresh index data into storage
 	Flush() error
 
 	// Close the storage manager

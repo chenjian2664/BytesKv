@@ -12,13 +12,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package memo
-
-import "BytesDB/core"
+package core
 
 type Index interface {
-	Put(core.Bytes, *core.RecordPosition) (*core.RecordPosition, error)
-	Get(core.Bytes) (*core.RecordPosition, error)
-	Delete(core.Bytes) (bool, error)
-	Exists(core.Bytes) bool
+	Put(Bytes, *RecordPosition) (*RecordPosition, error)
+	Get(Bytes) (*RecordPosition, error)
+	Delete(Bytes) (bool, error)
+	Exists(Bytes) bool
 }

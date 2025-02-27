@@ -12,7 +12,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package memo
+package hash
 
 import (
 	"BytesDB"
@@ -22,12 +22,12 @@ import (
 )
 
 func TestNewIndexManager(t *testing.T) {
-	im := NewIndexManager()
+	im := NewLocalHashIndex()
 	assert.NotNil(t, im)
 }
 
 func TestIndexManager_Put(t *testing.T) {
-	im := NewIndexManager()
+	im := NewLocalHashIndex()
 	assert.NotNil(t, im)
 
 	pos := &core.RecordPosition{
@@ -56,7 +56,7 @@ func TestIndexManager_Put(t *testing.T) {
 }
 
 func TestIndexManager_Get(t *testing.T) {
-	im := NewIndexManager()
+	im := NewLocalHashIndex()
 	assert.NotNil(t, im)
 
 	pos := &core.RecordPosition{
@@ -85,7 +85,7 @@ func TestIndexManager_Get(t *testing.T) {
 }
 
 func TestIndexManager_Delete(t *testing.T) {
-	im := NewIndexManager()
+	im := NewLocalHashIndex()
 	assert.NotNil(t, im)
 
 	pos := &core.RecordPosition{}

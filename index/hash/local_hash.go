@@ -12,25 +12,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package memo
+package hash
 
 import (
 	"BytesDB"
 	"BytesDB/core"
 )
 
-type IndexManager struct {
+type LocalHashIndex struct {
 	// TODO: add different index types
 	index map[string]*core.RecordPosition
 }
 
-func NewIndexManager() *IndexManager {
-	return &IndexManager{
+func NewLocalHashIndex() *LocalHashIndex {
+	return &LocalHashIndex{
 		index: make(map[string]*core.RecordPosition),
 	}
 }
 
-func (im *IndexManager) Put(key core.Bytes, record *core.RecordPosition) (*core.RecordPosition, error) {
+func (im *LocalHashIndex) Put(key core.Bytes, record *core.RecordPosition) (*core.RecordPosition, error) {
 	if key == nil {
 		return nil, BytesDB.ErrKeyIsNil
 	}
@@ -47,7 +47,7 @@ func (im *IndexManager) Put(key core.Bytes, record *core.RecordPosition) (*core.
 	return nil, nil
 }
 
-func (im *IndexManager) Get(key core.Bytes) (*core.RecordPosition, error) {
+func (im *LocalHashIndex) Get(key core.Bytes) (*core.RecordPosition, error) {
 	if key == nil {
 		return nil, BytesDB.ErrKeyIsNil
 	}
@@ -59,7 +59,7 @@ func (im *IndexManager) Get(key core.Bytes) (*core.RecordPosition, error) {
 	return nil, BytesDB.ErrKeyNotFound
 }
 
-func (im *IndexManager) Delete(key core.Bytes) (bool, error) {
+func (im *LocalHashIndex) Delete(key core.Bytes) (bool, error) {
 	_, err := im.Get(key)
 	if err != nil {
 		return false, err
@@ -69,7 +69,7 @@ func (im *IndexManager) Delete(key core.Bytes) (bool, error) {
 	return true, nil
 }
 
-func (im *IndexManager) Exists(key core.Bytes) bool {
+func (im *LocalHashIndex) Exists(key core.Bytes) bool {
 	v, err := im.Get(key)
 	if err != nil {
 		return false
