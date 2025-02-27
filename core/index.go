@@ -19,4 +19,23 @@ type Index interface {
 	Get(Bytes) (*RecordPosition, error)
 	Delete(Bytes) (bool, error)
 	Exists(Bytes) bool
+
+	Iterator(reverse bool) Iterator
+}
+
+type Iterator interface {
+	// Rewind Back to the first data
+	Rewind()
+	// Seek find first key greater or equals to the `key`
+	Seek(key []byte)
+	Next()
+	Valid() bool
+	Key() []byte
+	Value() RecordPosition
+	Close()
+}
+
+type IndexId struct {
+	Schema string
+	Table  string
 }
