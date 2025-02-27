@@ -29,7 +29,7 @@ const (
 	Deleted
 )
 
-// Record the record that use between memo and storage
+// Record the record that use between index and storage
 // record:
 //  1. header: crc, type, keySize, valueSize
 //  2. data: key, value
