@@ -21,9 +21,3 @@ type RecordPosition struct {
 	Position  int64
 	Size      int
 }
-
-type StorageId struct {
-	Schema    string
-	Table     string
-	StorageId string
-}

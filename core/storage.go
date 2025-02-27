@@ -41,3 +41,9 @@ type Storage interface {
 	// Note: this is only used for the test purpose
 	RemoveAll() error
 }
+
+type StorageId struct {
+	Schema    string
+	Table     string
+	StorageId string
+}
