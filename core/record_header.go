@@ -30,7 +30,7 @@ type RecordHeader struct {
 	ValueSize uint32
 }
 
-func (rh *RecordHeader) pack() Bytes {
+func (rh *RecordHeader) Pack() Bytes {
 	header := make(Bytes, maxLogRecordHeaderSize)
 
 	// crc

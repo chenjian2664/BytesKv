@@ -39,7 +39,7 @@ type Record struct {
 	Type  RecordType
 }
 
-func (r *Record) packHeader() Bytes {
+func (r *Record) PackHeader() Bytes {
 	header := make(Bytes, maxLogRecordHeaderSize)
 	// type
 	header[4] = byte(r.Type)
@@ -58,8 +58,8 @@ func (r *Record) packHeader() Bytes {
 	return header[:index]
 }
 
-func (r *Record) pack() Bytes {
-	header := r.packHeader()
+func (r *Record) Pack() Bytes {
+	header := r.PackHeader()
 	record := make(Bytes, header.Size()+r.Key.Size()+r.Value.Size())
 	copy(record, header)
 

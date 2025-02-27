@@ -159,3 +159,8 @@ func (fio *fileStorage) CurrentStorageId() core.StorageId {
 		StorageId: fio.activeFile.Name(),
 	}
 }
+
+func (fio *fileStorage) RemoveAll() error {
+	path := path.Join(fio.rootPath, fio.schema, fio.tableName)
+	return os.RemoveAll(path)
+}

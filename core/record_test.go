@@ -38,9 +38,9 @@ func testBytesToRecord(t *testing.T, key, value Bytes, recordType RecordType) {
 		recordType,
 	}
 
-	bts := record.pack()
+	bts := record.Pack()
 	unpack := BytesToRecord(bts)
-	assert.Equal(t, record.packHeader(), unpack.packHeader())
+	assert.Equal(t, record.PackHeader(), unpack.PackHeader())
 	assert.Equal(t, record, unpack)
 }
 
@@ -54,8 +54,8 @@ func TestRecordToBytesCrc(t *testing.T) {
 		Normal,
 	}
 
-	header := record.packHeader()
-	bs := record.pack()
+	header := record.PackHeader()
+	bs := record.Pack()
 
 	// [type, keySize, valueSize]
 	assert.Equal(t, header[4:], bs[4:len(header)])
