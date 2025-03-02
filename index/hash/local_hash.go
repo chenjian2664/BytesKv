@@ -17,11 +17,64 @@ package hash
 import (
 	"BytesDB"
 	"BytesDB/core"
+	"errors"
 )
 
 type LocalHashIndex struct {
-	// TODO: add different index types
 	index map[string]*core.RecordPosition
+}
+
+type iterator struct {
+	keys   []string
+	values []*core.RecordPosition
+	idx    int
+}
+
+func (it *iterator) Rewind() {
+	it.idx = 0
+}
+
+func (it *iterator) Seek(key core.Bytes) error {
+	return errors.New("hash index not support seeking")
+}
+
+func (it *iterator) Next() {
+	it.idx++
+}
+
+func (it *iterator) Valid() bool {
+	return it.idx < len(it.keys)
+}
+
+func (it *iterator) Key() core.Bytes {
+	return core.Bytes(it.keys[it.idx])
+}
+
+func (it *iterator) Value() *core.RecordPosition {
+	return it.values[it.idx]
+}
+
+func (it *iterator) Close() {
+	it.keys = nil
+	it.values = nil
+}
+
+func (idx *LocalHashIndex) Iterator(reverse bool) (core.Iterator, error) {
+	if reverse {
+		// TODO
+		return nil, errors.New("hash index reverse not supported")
+	}
+	var keys []string
+	var values []*core.RecordPosition
+	for item := range idx.index {
+		keys = append(keys, item)
+		values = append(values, idx.index[item])
+	}
+	return &iterator{
+		idx:    0,
+		keys:   keys,
+		values: values,
+	}, nil
 }
 
 func NewLocalHashIndex() *LocalHashIndex {
@@ -30,7 +83,7 @@ func NewLocalHashIndex() *LocalHashIndex {
 	}
 }
 
-func (im *LocalHashIndex) Put(key core.Bytes, record *core.RecordPosition) (*core.RecordPosition, error) {
+func (idx *LocalHashIndex) Put(key core.Bytes, record *core.RecordPosition) (*core.RecordPosition, error) {
 	if key == nil {
 		return nil, BytesDB.ErrKeyIsNil
 	}
@@ -40,37 +93,37 @@ func (im *LocalHashIndex) Put(key core.Bytes, record *core.RecordPosition) (*cor
 	}
 
 	indexKey := string(key)
-	if old, ok := im.index[indexKey]; ok {
+	if old, ok := idx.index[indexKey]; ok {
 		return old, nil
 	}
-	im.index[indexKey] = record
+	idx.index[indexKey] = record
 	return nil, nil
 }
 
-func (im *LocalHashIndex) Get(key core.Bytes) (*core.RecordPosition, error) {
+func (idx *LocalHashIndex) Get(key core.Bytes) (*core.RecordPosition, error) {
 	if key == nil {
 		return nil, BytesDB.ErrKeyIsNil
 	}
 
-	if value, ok := im.index[string(key)]; ok {
+	if value, ok := idx.index[string(key)]; ok {
 		return value, nil
 	}
 
 	return nil, BytesDB.ErrKeyNotFound
 }
 
-func (im *LocalHashIndex) Delete(key core.Bytes) (bool, error) {
-	_, err := im.Get(key)
+func (idx *LocalHashIndex) Delete(key core.Bytes) (bool, error) {
+	_, err := idx.Get(key)
 	if err != nil {
 		return false, err
 	}
 
-	delete(im.index, string(key))
+	delete(idx.index, string(key))
 	return true, nil
 }
 
-func (im *LocalHashIndex) Exists(key core.Bytes) bool {
-	v, err := im.Get(key)
+func (idx *LocalHashIndex) Exists(key core.Bytes) bool {
+	v, err := idx.Get(key)
 	if err != nil {
 		return false
 	}

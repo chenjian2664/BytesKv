@@ -14,7 +14,11 @@ limitations under the License.
 
 package index
 
-import "BytesDB/core"
+import (
+	"BytesDB/core"
+	"BytesDB/index/hash"
+	"sync"
+)
 
 type IndexType = byte
 
@@ -23,29 +27,60 @@ const (
 )
 
 type IndexManager struct {
-	indexes map[core.IndexId]*core.Index
+	indexes map[core.IndexId]core.Index
+	mutex   sync.RWMutex
 }
 
-func (im *IndexManager) Get(id core.IndexId, key core.Bytes) (core.Bytes, error) {
-	if _, ok := im.indexes[id]; !ok {
-		panic("index not found")
-	}
-
-	return nil, nil
+func (im *IndexManager) Get(id core.IndexId, key core.Bytes) (*core.RecordPosition, error) {
+	return im.resolve(id).Get(key)
 }
 
-func (im *IndexManager) Put(id core.IndexId, key core.Bytes, value core.Bytes) error {
-	return nil
+func (im *IndexManager) Put(id core.IndexId, key core.Bytes, value *core.RecordPosition) (*core.RecordPosition, error) {
+	return im.resolve(id).Put(key, value)
 }
 
-func (im *IndexManager) Delete(id core.IndexId, key core.Bytes) error {
-	return nil
+func (im *IndexManager) Delete(id core.IndexId, key core.Bytes) (bool, error) {
+	return im.resolve(id).Delete(key)
 }
 
 func (im *IndexManager) ListKeys(id core.IndexId) []core.Bytes {
-	return nil
+	im.mutex.RLock()
+	defer im.mutex.RUnlock()
+	var keys []core.Bytes
+	it, _ := im.Iterator(id, false)
+	defer it.Close()
+
+	for ; it.Valid(); it.Next() {
+		keys = append(keys, it.Key())
+	}
+	return keys
 }
 
-func (im *IndexManager) Iter(id core.IndexId) core.Iterator {
-	return nil
+func (im *IndexManager) Iterator(id core.IndexId, reverse bool) (core.Iterator, error) {
+	return im.resolve(id).Iterator(reverse)
+}
+
+func (im *IndexManager) resolve(id core.IndexId) core.Index {
+	if _, ok := im.indexes[id]; !ok {
+		im.initializeIndex(Local_Hash, id)
+	}
+	return im.indexes[id]
+}
+
+func (im *IndexManager) initializeIndex(typ IndexType, id core.IndexId) {
+	im.mutex.Lock()
+	defer im.mutex.Unlock()
+
+	if _, ok := im.indexes[id]; ok {
+		return
+	}
+
+	switch typ {
+	case Local_Hash:
+		im.indexes[id] = hash.NewLocalHashIndex()
+		return
+
+	default:
+		panic("unknown index type")
+	}
 }
