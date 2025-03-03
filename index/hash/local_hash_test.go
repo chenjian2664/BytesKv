@@ -15,7 +15,6 @@ limitations under the License.
 package hash
 
 import (
-	"BytesDB"
 	"BytesDB/core"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -43,7 +42,7 @@ func TestIndexManager_Put(t *testing.T) {
 
 	old, err = im.Put(core.Bytes("hello"), nil)
 	assert.Nil(t, old)
-	assert.Error(t, err, BytesDB.ErrRecordPositionNil)
+	assert.Error(t, err, core.ErrRecordPositionNil)
 
 	old, err = im.Put(core.Bytes("hello"), &core.RecordPosition{})
 	assert.Nil(t, err)
@@ -51,7 +50,7 @@ func TestIndexManager_Put(t *testing.T) {
 
 	v, err := im.Put(nil, &core.RecordPosition{})
 	assert.Nil(t, v)
-	assert.Error(t, err, BytesDB.ErrKeyIsNil)
+	assert.Error(t, err, core.ErrKeyIsNil)
 }
 
 func TestIndexManager_Get(t *testing.T) {
@@ -76,11 +75,11 @@ func TestIndexManager_Get(t *testing.T) {
 
 	v, err = im.Get(core.Bytes("not exists"))
 	assert.Nil(t, v)
-	assert.Error(t, err, BytesDB.ErrKeyNotFound)
+	assert.Error(t, err, core.ErrKeyNotFound)
 
 	v, err = im.Get(nil)
 	assert.Nil(t, v)
-	assert.Error(t, err, BytesDB.ErrKeyIsNil)
+	assert.Error(t, err, core.ErrKeyIsNil)
 }
 
 func TestIndexManager_Delete(t *testing.T) {
@@ -102,11 +101,11 @@ func TestIndexManager_Delete(t *testing.T) {
 
 	v, err = im.Get(core.Bytes("not exists"))
 	assert.Nil(t, v)
-	assert.Error(t, err, BytesDB.ErrKeyNotFound)
+	assert.Error(t, err, core.ErrKeyNotFound)
 
 	deleted, err = im.Delete(nil)
 	assert.False(t, deleted)
-	assert.Error(t, err, BytesDB.ErrKeyIsNil)
+	assert.Error(t, err, core.ErrKeyIsNil)
 }
 
 func TestLocalHashIndex_Iterator(t *testing.T) {
