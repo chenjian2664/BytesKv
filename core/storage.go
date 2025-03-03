@@ -43,7 +43,6 @@ type Storage interface {
 }
 
 type StorageId struct {
-	Schema    string
-	Table     string
-	StorageId string
+	Schema string
+	Table  string
 }

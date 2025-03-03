@@ -32,9 +32,8 @@ func TestIndexManager_Put(t *testing.T) {
 
 	pos := &core.RecordPosition{
 		StorageId: core.StorageId{
-			Schema:    "public",
-			Table:     "test",
-			StorageId: "000000000001.data"},
+			Schema: "public",
+			Table:  "test"},
 		Size: 10,
 	}
 
@@ -61,9 +60,9 @@ func TestIndexManager_Get(t *testing.T) {
 
 	pos := &core.RecordPosition{
 		StorageId: core.StorageId{
-			Schema:    "public",
-			Table:     "test",
-			StorageId: "000000000001.data"},
+			Schema: "public",
+			Table:  "test",
+		},
 		Size: 10,
 	}
 
@@ -124,9 +123,9 @@ func TestLocalHashIndex_Iterator(t *testing.T) {
 
 	pos := &core.RecordPosition{
 		StorageId: core.StorageId{
-			Schema:    "public",
-			Table:     "test",
-			StorageId: "000000000000.data"},
+			Schema: "public",
+			Table:  "test",
+		},
 		Position: int64(0),
 		Size:     5,
 	}

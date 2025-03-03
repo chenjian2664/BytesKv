@@ -21,9 +21,8 @@ import (
 )
 
 var sid = core.StorageId{
-	Schema:    "public",
-	Table:     "test",
-	StorageId: "0000000001.data"}
+	Schema: "public",
+	Table:  "test"}
 
 func TestNewStorageManager(t *testing.T) {
 	sm := NewStorageManager()

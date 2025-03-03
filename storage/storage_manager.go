@@ -118,7 +118,7 @@ func (sm *StorageManager) initializeStorage(storageType StorageType, storageId c
 			path = root
 		}
 
-		storage, err := file.NewLocalFileStorage(path, storageId.Schema, storageId.Schema)
+		storage, err := file.NewLocalFileStorage(path, storageId.Schema, storageId.Table)
 		if err != nil {
 			panic(err)
 		}

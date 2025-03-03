@@ -152,11 +152,11 @@ func (fio *fileStorage) Size() (int64, error) {
 	return stat.Size(), nil
 }
 
+// CurrentStorageId TODO do we need storage expose more info?
 func (fio *fileStorage) CurrentStorageId() core.StorageId {
 	return core.StorageId{
-		Schema:    fio.schema,
-		Table:     fio.tableName,
-		StorageId: fio.activeFile.Name(),
+		Schema: fio.schema,
+		Table:  fio.tableName,
 	}
 }
 
