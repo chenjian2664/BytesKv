@@ -31,6 +31,13 @@ type IndexManager struct {
 	mutex   sync.RWMutex
 }
 
+func NewIndexManager() *IndexManager {
+	return &IndexManager{
+		make(map[core.IndexId]core.Index),
+		sync.RWMutex{},
+	}
+}
+
 func (im *IndexManager) Get(id core.IndexId, key core.Bytes) (*core.RecordPosition, error) {
 	return im.resolve(id).Get(key)
 }

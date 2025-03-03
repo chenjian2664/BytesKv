@@ -15,7 +15,6 @@ limitations under the License.
 package hash
 
 import (
-	"BytesDB"
 	"BytesDB/core"
 	"errors"
 )
@@ -83,33 +82,34 @@ func NewLocalHashIndex() *LocalHashIndex {
 	}
 }
 
-func (idx *LocalHashIndex) Put(key core.Bytes, record *core.RecordPosition) (*core.RecordPosition, error) {
+func (idx *LocalHashIndex) Put(key core.Bytes, position *core.RecordPosition) (*core.RecordPosition, error) {
 	if key == nil {
-		return nil, BytesDB.ErrKeyIsNil
+		return nil, core.ErrKeyIsNil
 	}
 
-	if record == nil {
-		return nil, BytesDB.ErrRecordPositionNil
+	if position == nil {
+		return nil, core.ErrRecordPositionNil
 	}
 
 	indexKey := string(key)
 	if old, ok := idx.index[indexKey]; ok {
+		idx.index[indexKey] = position
 		return old, nil
 	}
-	idx.index[indexKey] = record
+	idx.index[indexKey] = position
 	return nil, nil
 }
 
 func (idx *LocalHashIndex) Get(key core.Bytes) (*core.RecordPosition, error) {
 	if key == nil {
-		return nil, BytesDB.ErrKeyIsNil
+		return nil, core.ErrKeyIsNil
 	}
 
 	if value, ok := idx.index[string(key)]; ok {
 		return value, nil
 	}
 
-	return nil, BytesDB.ErrKeyNotFound
+	return nil, core.ErrKeyNotFound
 }
 
 func (idx *LocalHashIndex) Delete(key core.Bytes) (bool, error) {
