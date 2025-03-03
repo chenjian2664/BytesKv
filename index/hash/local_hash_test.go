@@ -109,3 +109,58 @@ func TestIndexManager_Delete(t *testing.T) {
 	assert.False(t, deleted)
 	assert.Error(t, err, BytesDB.ErrKeyIsNil)
 }
+
+func TestLocalHashIndex_Iterator(t *testing.T) {
+	im := NewLocalHashIndex()
+	assert.NotNil(t, im)
+
+	it, err := im.Iterator(false)
+	assert.Nil(t, err)
+	assert.NotNil(t, it)
+
+	it, err = im.Iterator(true)
+	assert.Nil(t, it)
+	assert.Error(t, err, "hash index reverse not supported")
+
+	pos := &core.RecordPosition{
+		StorageId: core.StorageId{
+			Schema:    "public",
+			Table:     "test",
+			StorageId: "000000000000.data"},
+		Position: int64(0),
+		Size:     5,
+	}
+
+	write, err := im.Put(core.Bytes("hello0"), pos)
+	assert.Nil(t, err)
+	assert.Nil(t, write)
+
+	// the old value is return correctly
+	write, err = im.Put(core.Bytes("hello0"), pos)
+	assert.Nil(t, err)
+	assert.NotNil(t, write)
+	assert.Equal(t, write, pos)
+
+	// Test all keys are correct accessed by iterator
+	keys := make(map[string]*core.RecordPosition)
+	keys["hello0"] = pos
+
+	_, _ = im.Put(core.Bytes("hello1"), pos)
+	keys["hello1"] = pos
+
+	_, _ = im.Put(core.Bytes("hello2"), pos)
+	keys["hello2"] = pos
+
+	_, _ = im.Put(core.Bytes("hello3"), pos)
+	keys["hello3"] = pos
+
+	it, err = im.Iterator(false)
+	assert.Nil(t, err)
+	for i := 0; it.Valid(); it.Next() {
+		assert.Equal(t, pos, it.Value())
+		expected, ok := keys[string(it.Key())]
+		assert.True(t, ok)
+		assert.Equal(t, expected, it.Value())
+		i++
+	}
+}
