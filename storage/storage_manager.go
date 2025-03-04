@@ -27,14 +27,14 @@ const (
 )
 
 type StorageManager struct {
-	storages map[core.StorageId]core.Storage
+	storages map[core.Session]core.Storage
 	mutex    sync.RWMutex
 	options  StorageOptions
 }
 
 func NewStorageManager() *StorageManager {
 	return &StorageManager{
-		make(map[core.StorageId]core.Storage),
+		make(map[core.Session]core.Storage),
 		sync.RWMutex{},
 		loadStorageOptions(),
 	}
@@ -46,8 +46,7 @@ func loadStorageOptions() StorageOptions {
 }
 
 func (sm *StorageManager) Read(position core.RecordPosition) *core.Record {
-	sid := position.StorageId
-	storage := sm.resolveStorage(sid)
+	storage := sm.resolveStorage(position.Session)
 
 	// TODO: consider shall we reader header separately, instead of read whole record size
 	bytes := make(core.Bytes, position.Size)
@@ -60,8 +59,8 @@ func (sm *StorageManager) Read(position core.RecordPosition) *core.Record {
 }
 
 // append
-func (sm *StorageManager) Write(sid core.StorageId, record *core.Record) core.RecordPosition {
-	storage := sm.resolveStorage(sid)
+func (sm *StorageManager) Write(session core.Session, record *core.Record) core.RecordPosition {
+	storage := sm.resolveStorage(session)
 	bytes := record.Pack()
 	write, err := storage.Write(bytes)
 	if err != nil {
@@ -72,26 +71,26 @@ func (sm *StorageManager) Write(sid core.StorageId, record *core.Record) core.Re
 	sz, _ := storage.Size()
 
 	return core.RecordPosition{
-		StorageId: sid,
-		Position:  sz - int64(write),
-		Size:      write,
+		Session:  session,
+		Position: sz - int64(write),
+		Size:     write,
 	}
 }
 
-func (sm *StorageManager) Delete(sid core.StorageId, key core.Bytes) core.RecordPosition {
+func (sm *StorageManager) Delete(session core.Session, key core.Bytes) core.RecordPosition {
 	record := &core.Record{
 		Key:   key,
 		Value: core.Bytes{},
 		Type:  core.Deleted,
 	}
-	return sm.Write(sid, record)
+	return sm.Write(session, record)
 }
 
-func (sm *StorageManager) RemoveStorageData(sid core.StorageId) {
+func (sm *StorageManager) RemoveStorageData(sid core.Session) {
 	_ = sm.resolveStorage(sid).RemoveAll()
 }
 
-func (sm *StorageManager) resolveStorage(sid core.StorageId) core.Storage {
+func (sm *StorageManager) resolveStorage(sid core.Session) core.Storage {
 	if _, ok := sm.storages[sid]; !ok {
 		// TODO: get storageType by StorageId, now just support Local_File
 		sm.initializeStorage(Local_File, sid)
@@ -101,28 +100,28 @@ func (sm *StorageManager) resolveStorage(sid core.StorageId) core.Storage {
 	return storage
 }
 
-func (sm *StorageManager) initializeStorage(storageType StorageType, storageId core.StorageId) {
+func (sm *StorageManager) initializeStorage(storageType StorageType, session core.Session) {
 	sm.mutex.Lock()
 	defer sm.mutex.Unlock()
 
-	if _, ok := sm.storages[storageId]; ok {
+	if _, ok := sm.storages[session]; ok {
 		return
 	}
 	switch storageType {
 	case Local_File:
 		var path string
-		if root, ok := sm.options.rootPaths[storageId.Schema]; !ok {
+		if root, ok := sm.options.rootPaths[session.Schema]; !ok {
 			// TODO: add it into options
 			path = "/tmp/bytes_db/warehouse"
 		} else {
 			path = root
 		}
 
-		storage, err := file.NewLocalFileStorage(path, storageId.Schema, storageId.Table)
+		storage, err := file.NewLocalFileStorage(path, session.Schema, session.Table)
 		if err != nil {
 			panic(err)
 		}
-		sm.storages[storageId] = storage
+		sm.storages[session] = storage
 	default:
 		// TODO: create error
 		panic("storage type not supported: " + string(storageType))

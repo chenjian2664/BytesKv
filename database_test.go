@@ -20,6 +20,11 @@ import (
 	"testing"
 )
 
+var session = core.Session{
+	Schema: "public",
+	Table:  "test",
+}
+
 func TestOpenBytesDb(t *testing.T) {
 	db := OpenBytesDb()
 	assert.NotNil(t, db)
@@ -29,14 +34,14 @@ func TestDatabase_Put_Get(t *testing.T) {
 	db := OpenBytesDb()
 	assert.NotNil(t, db)
 
-	err := db.Put("public", "test", core.Bytes("hello"), core.Bytes("world"))
+	err := db.Put(session, core.Bytes("hello"), core.Bytes("world"))
 	assert.Nil(t, err)
-	r, err := db.Get("public", "test", core.Bytes("hello"))
+	r, err := db.Get(session, core.Bytes("hello"))
 	assert.Nil(t, err)
 	assert.Equal(t, core.Bytes("world"), r)
 
-	err = db.Put("public", "test", core.Bytes("hello"), core.Bytes("updated world"))
+	err = db.Put(session, core.Bytes("hello"), core.Bytes("updated world"))
 	assert.Nil(t, err)
-	r, _ = db.Get("public", "test", core.Bytes("hello"))
+	r, _ = db.Get(session, core.Bytes("hello"))
 	assert.Equal(t, core.Bytes("updated world"), r)
 }

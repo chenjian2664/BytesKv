@@ -14,8 +14,6 @@ limitations under the License.
 
 package core
 
-const FilePerm = 0644
-
 // Storage each Storage is indicated by StorageId by caller
 type Storage interface {
 	// Read from storage with the position(int64)
@@ -36,13 +34,6 @@ type Storage interface {
 	// not the whole dir of storage size
 	Size() (int64, error)
 
-	CurrentStorageId() StorageId
-
 	// Note: this is only used for the test purpose
 	RemoveAll() error
-}
-
-type StorageId struct {
-	Schema string
-	Table  string
 }

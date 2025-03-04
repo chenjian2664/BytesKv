@@ -27,30 +27,30 @@ const (
 )
 
 type IndexManager struct {
-	indexes map[core.IndexId]core.Index
+	indexes map[core.Session]core.Index
 	mutex   sync.RWMutex
 }
 
 func NewIndexManager() *IndexManager {
 	return &IndexManager{
-		make(map[core.IndexId]core.Index),
+		make(map[core.Session]core.Index),
 		sync.RWMutex{},
 	}
 }
 
-func (im *IndexManager) Get(id core.IndexId, key core.Bytes) (*core.RecordPosition, error) {
+func (im *IndexManager) Get(id core.Session, key core.Bytes) (*core.RecordPosition, error) {
 	return im.resolve(id).Get(key)
 }
 
-func (im *IndexManager) Put(id core.IndexId, key core.Bytes, value *core.RecordPosition) (*core.RecordPosition, error) {
+func (im *IndexManager) Put(id core.Session, key core.Bytes, value *core.RecordPosition) (*core.RecordPosition, error) {
 	return im.resolve(id).Put(key, value)
 }
 
-func (im *IndexManager) Delete(id core.IndexId, key core.Bytes) (bool, error) {
+func (im *IndexManager) Delete(id core.Session, key core.Bytes) (bool, error) {
 	return im.resolve(id).Delete(key)
 }
 
-func (im *IndexManager) ListKeys(id core.IndexId) []core.Bytes {
+func (im *IndexManager) ListKeys(id core.Session) []core.Bytes {
 	im.mutex.RLock()
 	defer im.mutex.RUnlock()
 	var keys []core.Bytes
@@ -63,18 +63,18 @@ func (im *IndexManager) ListKeys(id core.IndexId) []core.Bytes {
 	return keys
 }
 
-func (im *IndexManager) Iterator(id core.IndexId, reverse bool) (core.Iterator, error) {
+func (im *IndexManager) Iterator(id core.Session, reverse bool) (core.Iterator, error) {
 	return im.resolve(id).Iterator(reverse)
 }
 
-func (im *IndexManager) resolve(id core.IndexId) core.Index {
+func (im *IndexManager) resolve(id core.Session) core.Index {
 	if _, ok := im.indexes[id]; !ok {
 		im.initializeIndex(Local_Hash, id)
 	}
 	return im.indexes[id]
 }
 
-func (im *IndexManager) initializeIndex(typ IndexType, id core.IndexId) {
+func (im *IndexManager) initializeIndex(typ IndexType, id core.Session) {
 	im.mutex.Lock()
 	defer im.mutex.Unlock()
 
