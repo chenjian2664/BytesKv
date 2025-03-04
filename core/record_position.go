@@ -17,7 +17,7 @@ package core
 // RecordPosition the position of the record
 // use it to read actual data from storage
 type RecordPosition struct {
-	StorageId StorageId
-	Position  int64
-	Size      int
+	Session  Session
+	Position int64
+	Size     int
 }

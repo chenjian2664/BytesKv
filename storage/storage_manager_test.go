@@ -20,7 +20,7 @@ import (
 	"testing"
 )
 
-var sid = core.StorageId{
+var sid = core.Session{
 	Schema: "public",
 	Table:  "test"}
 
@@ -45,7 +45,7 @@ func TestStorageManager_Write(t *testing.T) {
 
 	pos := sm.Write(sid, record)
 	assert.NotNil(t, pos)
-	assert.Equal(t, sid, pos.StorageId)
+	assert.Equal(t, sid, pos.Session)
 	assert.Equal(t, position, pos.Position)
 	assert.Equal(t, len(record.Pack()), pos.Size)
 
@@ -57,7 +57,6 @@ func TestStorageManager_Write(t *testing.T) {
 	}
 	pos = sm.Write(sid, record)
 	assert.NotNil(t, pos)
-	assert.Equal(t, pos.StorageId, sid)
 	assert.Equal(t, pos.Position, position)
 	assert.Equal(t, pos.Size, len(record.Pack()))
 }
@@ -78,7 +77,7 @@ func TestStorageManager_Read(t *testing.T) {
 
 	pos := sm.Write(sid, record)
 	assert.NotNil(t, pos)
-	assert.Equal(t, sid, pos.StorageId)
+	assert.Equal(t, sid, pos.Session)
 	assert.Equal(t, position, pos.Position)
 	assert.Equal(t, len(record.Pack()), pos.Size)
 
@@ -93,7 +92,7 @@ func TestStorageManager_Read(t *testing.T) {
 	}
 	pos = sm.Write(sid, record)
 	assert.NotNil(t, pos)
-	assert.Equal(t, pos.StorageId, sid)
+	assert.Equal(t, pos.Session, sid)
 	assert.Equal(t, pos.Position, position)
 	assert.Equal(t, pos.Size, len(record.Pack()))
 	read = sm.Read(pos)
@@ -116,7 +115,7 @@ func TestStorageManager_Remove(t *testing.T) {
 
 	pos := sm.Write(sid, record)
 	assert.NotNil(t, pos)
-	assert.Equal(t, sid, pos.StorageId)
+	assert.Equal(t, sid, pos.Session)
 	assert.Equal(t, position, pos.Position)
 	assert.Equal(t, len(record.Pack()), pos.Size)
 

@@ -152,20 +152,12 @@ func (fio *fileStorage) Size() (int64, error) {
 	return stat.Size(), nil
 }
 
-// CurrentStorageId TODO do we need storage expose more info?
-func (fio *fileStorage) CurrentStorageId() core.StorageId {
-	return core.StorageId{
-		Schema: fio.schema,
-		Table:  fio.tableName,
-	}
-}
-
 func (fio *fileStorage) RemoveAll() error {
 	path := path.Join(fio.rootPath, fio.schema, fio.tableName)
 	return os.RemoveAll(path)
 }
 
-func (fio *fileStorage) CleanAll(id core.StorageId) error {
+func (fio *fileStorage) CleanAll(id core.Session) error {
 	tableLocation := path.Join(fio.rootPath, id.Schema, id.Table)
 	return os.RemoveAll(tableLocation)
 }

@@ -30,9 +30,6 @@ func TestIndexManager_Put(t *testing.T) {
 	assert.NotNil(t, im)
 
 	pos := &core.RecordPosition{
-		StorageId: core.StorageId{
-			Schema: "public",
-			Table:  "test"},
 		Size: 10,
 	}
 
@@ -58,10 +55,6 @@ func TestIndexManager_Get(t *testing.T) {
 	assert.NotNil(t, im)
 
 	pos := &core.RecordPosition{
-		StorageId: core.StorageId{
-			Schema: "public",
-			Table:  "test",
-		},
 		Size: 10,
 	}
 
@@ -121,10 +114,6 @@ func TestLocalHashIndex_Iterator(t *testing.T) {
 	assert.Error(t, err, "hash index reverse not supported")
 
 	pos := &core.RecordPosition{
-		StorageId: core.StorageId{
-			Schema: "public",
-			Table:  "test",
-		},
 		Position: int64(0),
 		Size:     5,
 	}

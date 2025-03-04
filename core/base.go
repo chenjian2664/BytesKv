@@ -14,23 +14,7 @@ limitations under the License.
 
 package core
 
-type Index interface {
-	Put(Bytes, *RecordPosition) (*RecordPosition, error)
-	Get(Bytes) (*RecordPosition, error)
-	Delete(Bytes) (bool, error)
-	Exists(Bytes) bool
-
-	Iterator(reverse bool) (Iterator, error)
-}
-
-type Iterator interface {
-	// Rewind Back to the first data
-	Rewind()
-	// Seek find first key greater or equals to the `key`
-	Seek(key Bytes) error
-	Next()
-	Valid() bool
-	Key() Bytes
-	Value() *RecordPosition
-	Close()
+type Session struct {
+	Schema string
+	Table  string
 }
