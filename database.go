@@ -15,6 +15,7 @@ limitations under the License.
 package BytesDB
 
 import (
+	"BytesDB/config"
 	"BytesDB/core"
 	"BytesDB/index"
 	"BytesDB/storage"
@@ -28,10 +29,14 @@ type Database struct {
 
 func OpenBytesDb() *Database {
 	// TODO: implement it
+	cfg, err := config.LoadConfig("db.properties")
+	if err != nil {
+		panic(err)
+	}
 
 	return &Database{
 		index.NewIndexManager(),
-		storage.NewStorageManager(),
+		storage.NewStorageManager(cfg.StorageType),
 	}
 }
 
