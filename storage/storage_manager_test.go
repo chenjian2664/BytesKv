@@ -25,12 +25,12 @@ var sid = core.Session{
 	Table:  "test"}
 
 func TestNewStorageManager(t *testing.T) {
-	sm := NewStorageManager()
+	sm := NewStorageManager("")
 	assert.NotNil(t, sm)
 }
 
 func TestStorageManager_Write(t *testing.T) {
-	sm := NewStorageManager()
+	sm := NewStorageManager("")
 	t.Cleanup(func() {
 		sm.RemoveAllData(sid)
 	})
@@ -62,7 +62,7 @@ func TestStorageManager_Write(t *testing.T) {
 }
 
 func TestStorageManager_Read(t *testing.T) {
-	sm := NewStorageManager()
+	sm := NewStorageManager("")
 	t.Cleanup(func() {
 		sm.RemoveAllData(sid)
 	})
@@ -100,7 +100,7 @@ func TestStorageManager_Read(t *testing.T) {
 }
 
 func TestStorageManager_Remove(t *testing.T) {
-	sm := NewStorageManager()
+	sm := NewStorageManager("")
 	t.Cleanup(func() {
 		sm.RemoveAllData(sid)
 	})

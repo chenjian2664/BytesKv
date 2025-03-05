@@ -30,13 +30,28 @@ type StorageManager struct {
 	storages map[core.Session]core.Storage
 	mutex    sync.RWMutex
 	options  StorageOptions
+	typ      StorageType
 }
 
-func NewStorageManager() *StorageManager {
+func NewStorageManager(storageType string) *StorageManager {
 	return &StorageManager{
 		make(map[core.Session]core.Storage),
 		sync.RWMutex{},
 		loadStorageOptions(),
+		resolveStorageType(storageType),
+	}
+}
+
+func resolveStorageType(typ string) StorageType {
+	// by default
+	if typ == "" {
+		return Local_File
+	}
+	switch typ {
+	case "local_file":
+		return Local_File
+	default:
+		panic("unknown storage type")
 	}
 }
 
@@ -95,8 +110,7 @@ func (sm *StorageManager) RemoveAllData(sid core.Session) {
 
 func (sm *StorageManager) resolveStorage(sid core.Session) core.Storage {
 	if _, ok := sm.storages[sid]; !ok {
-		// TODO: get storageType by StorageId, now just support Local_File
-		sm.initializeStorage(Local_File, sid)
+		sm.initializeStorage(sm.typ, sid)
 	}
 
 	storage := sm.storages[sid]
@@ -104,9 +118,6 @@ func (sm *StorageManager) resolveStorage(sid core.Session) core.Storage {
 }
 
 func (sm *StorageManager) initializeStorage(storageType StorageType, session core.Session) {
-	sm.mutex.Lock()
-	defer sm.mutex.Unlock()
-
 	if _, ok := sm.storages[session]; ok {
 		return
 	}
