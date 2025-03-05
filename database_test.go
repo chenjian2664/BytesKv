@@ -33,6 +33,9 @@ func TestOpenBytesDb(t *testing.T) {
 func TestDatabase_Put_Get(t *testing.T) {
 	db := OpenBytesDb()
 	assert.NotNil(t, db)
+	t.Cleanup(func() {
+		db.RemoveAllData(session)
+	})
 
 	err := db.Put(session, core.Bytes("hello"), core.Bytes("world"))
 	assert.Nil(t, err)

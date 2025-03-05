@@ -79,8 +79,10 @@ func (db *Database) Keys(session core.Session) []core.Bytes {
 	return db.im.ListKeys(session)
 }
 
-func (db *Database) Clear() {
-	// TODO: implement it
+// RemoveAllData Note this only for test
+func (db *Database) RemoveAllData(session core.Session) {
+	db.im.RemoveAllData(session)
+	db.sm.RemoveAllData(session)
 }
 
 func (db *Database) Close() {

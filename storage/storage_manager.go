@@ -86,7 +86,10 @@ func (sm *StorageManager) Delete(session core.Session, key core.Bytes) core.Reco
 	return sm.Write(session, record)
 }
 
-func (sm *StorageManager) RemoveStorageData(sid core.Session) {
+func (sm *StorageManager) RemoveAllData(sid core.Session) {
+	sm.mutex.Lock()
+	defer sm.mutex.Unlock()
+
 	_ = sm.resolveStorage(sid).RemoveAll()
 }
 
@@ -111,8 +114,7 @@ func (sm *StorageManager) initializeStorage(storageType StorageType, session cor
 	case Local_File:
 		var path string
 		if root, ok := sm.options.rootPaths[session.Schema]; !ok {
-			// TODO: add it into options
-			path = "/tmp/bytes_db/warehouse"
+			panic("can not get options root path")
 		} else {
 			path = root
 		}

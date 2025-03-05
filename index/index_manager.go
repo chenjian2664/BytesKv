@@ -67,6 +67,12 @@ func (im *IndexManager) Iterator(id core.Session, reverse bool) (core.Iterator, 
 	return im.resolve(id).Iterator(reverse)
 }
 
+func (im *IndexManager) RemoveAllData(session core.Session) {
+	im.mutex.Lock()
+	defer im.mutex.Unlock()
+	im.indexes = make(map[core.Session]core.Index)
+}
+
 func (im *IndexManager) resolve(id core.Session) core.Index {
 	if _, ok := im.indexes[id]; !ok {
 		im.initializeIndex(Local_Hash, id)

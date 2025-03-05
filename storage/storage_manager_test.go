@@ -32,7 +32,7 @@ func TestNewStorageManager(t *testing.T) {
 func TestStorageManager_Write(t *testing.T) {
 	sm := NewStorageManager()
 	t.Cleanup(func() {
-		sm.RemoveStorageData(sid)
+		sm.RemoveAllData(sid)
 	})
 
 	record := &core.Record{
@@ -64,7 +64,7 @@ func TestStorageManager_Write(t *testing.T) {
 func TestStorageManager_Read(t *testing.T) {
 	sm := NewStorageManager()
 	t.Cleanup(func() {
-		sm.RemoveStorageData(sid)
+		sm.RemoveAllData(sid)
 	})
 
 	record := &core.Record{
@@ -102,7 +102,7 @@ func TestStorageManager_Read(t *testing.T) {
 func TestStorageManager_Remove(t *testing.T) {
 	sm := NewStorageManager()
 	t.Cleanup(func() {
-		sm.RemoveStorageData(sid)
+		sm.RemoveAllData(sid)
 	})
 
 	record := &core.Record{
