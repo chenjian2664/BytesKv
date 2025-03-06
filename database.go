@@ -23,8 +23,9 @@ import (
 )
 
 type Database struct {
-	im *index.IndexManager
-	sm *storage.StorageManager
+	options *config.DBConfig
+	im      *index.IndexManager
+	sm      *storage.StorageManager
 }
 
 func OpenBytesDb() *Database {
@@ -35,8 +36,9 @@ func OpenBytesDb() *Database {
 	}
 
 	return &Database{
-		index.NewIndexManager(),
-		storage.NewStorageManager(cfg.StorageType),
+		options: cfg,
+		im:      index.NewIndexManager(),
+		sm:      storage.NewStorageManager(cfg),
 	}
 }
 

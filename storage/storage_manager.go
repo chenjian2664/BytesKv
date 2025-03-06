@@ -15,6 +15,7 @@ limitations under the License.
 package storage
 
 import (
+	"BytesDB/config"
 	"BytesDB/core"
 	"BytesDB/storage/file"
 	"sync"
@@ -29,16 +30,16 @@ const (
 type StorageManager struct {
 	storages map[core.Session]core.Storage
 	mutex    sync.RWMutex
-	options  StorageOptions
+	options  *StorageOptions
 	typ      StorageType
 }
 
-func NewStorageManager(storageType string) *StorageManager {
+func NewStorageManager(cfg *config.DBConfig) *StorageManager {
 	return &StorageManager{
 		make(map[core.Session]core.Storage),
 		sync.RWMutex{},
-		loadStorageOptions(),
-		resolveStorageType(storageType),
+		FromDbOptions(cfg),
+		resolveStorageType(cfg.StorageType),
 	}
 }
 
@@ -123,14 +124,7 @@ func (sm *StorageManager) initializeStorage(storageType StorageType, session cor
 	}
 	switch storageType {
 	case Local_File:
-		var path string
-		if root, ok := sm.options.rootPaths[session.Schema]; !ok {
-			panic("can not get options root path")
-		} else {
-			path = root
-		}
-
-		storage, err := file.NewLocalFileStorage(path, session.Schema, session.Table)
+		storage, err := file.NewLocalFileStorage(sm.options.rootPath, session.Schema, session.Table)
 		if err != nil {
 			panic(err)
 		}

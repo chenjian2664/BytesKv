@@ -14,6 +14,10 @@ limitations under the License.
 
 package storage
 
+import (
+	"BytesDB/config"
+)
+
 // configurations
 // should be kept in metadata
 
@@ -24,6 +28,13 @@ package storage
 // bytes.schema.per.max-size.public the default maxSize(bytes) for each storage unit
 
 type StorageOptions struct {
-	// schema -> path
-	rootPaths map[string]string
+	// warehouse directory
+	rootPath string
+}
+
+// FromDbOptions pure and validate config for storage
+func FromDbOptions(cfg *config.DBConfig) *StorageOptions {
+	return &StorageOptions{
+		rootPath: cfg.DataDir,
+	}
 }
