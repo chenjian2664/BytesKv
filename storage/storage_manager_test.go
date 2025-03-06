@@ -15,6 +15,7 @@ limitations under the License.
 package storage
 
 import (
+	"BytesDB/config"
 	"BytesDB/core"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -24,13 +25,17 @@ var sid = core.Session{
 	Schema: "public",
 	Table:  "test"}
 
+var dbconfig = &config.DBConfig{
+	DataDir: "/tmp/bytesdb",
+}
+
 func TestNewStorageManager(t *testing.T) {
-	sm := NewStorageManager("")
+	sm := NewStorageManager(dbconfig)
 	assert.NotNil(t, sm)
 }
 
 func TestStorageManager_Write(t *testing.T) {
-	sm := NewStorageManager("")
+	sm := NewStorageManager(dbconfig)
 	t.Cleanup(func() {
 		sm.RemoveAllData(sid)
 	})
@@ -62,7 +67,7 @@ func TestStorageManager_Write(t *testing.T) {
 }
 
 func TestStorageManager_Read(t *testing.T) {
-	sm := NewStorageManager("")
+	sm := NewStorageManager(dbconfig)
 	t.Cleanup(func() {
 		sm.RemoveAllData(sid)
 	})
@@ -100,7 +105,7 @@ func TestStorageManager_Read(t *testing.T) {
 }
 
 func TestStorageManager_Remove(t *testing.T) {
-	sm := NewStorageManager("")
+	sm := NewStorageManager(dbconfig)
 	t.Cleanup(func() {
 		sm.RemoveAllData(sid)
 	})
