@@ -56,11 +56,6 @@ func resolveStorageType(typ string) StorageType {
 	}
 }
 
-func loadStorageOptions() StorageOptions {
-	// TODO: implement it
-	return StorageOptions{}
-}
-
 func (sm *StorageManager) Read(position core.RecordPosition) *core.Record {
 	storage := sm.resolveStorage(position.Session)
 
