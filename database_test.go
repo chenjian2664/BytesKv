@@ -48,3 +48,64 @@ func TestDatabase_Put_Get(t *testing.T) {
 	r, _ = db.Get(session, core.Bytes("hello"))
 	assert.Equal(t, core.Bytes("updated world"), r)
 }
+
+func TestDatabase_Put_Delete(t *testing.T) {
+	db := OpenBytesDb()
+	assert.NotNil(t, db)
+	t.Cleanup(func() {
+		db.RemoveAllData(session)
+	})
+
+	err := db.Put(session, core.Bytes("hello"), core.Bytes("world"))
+	assert.Nil(t, err)
+	r, err := db.Get(session, core.Bytes("hello"))
+	assert.Nil(t, err)
+	assert.Equal(t, core.Bytes("world"), r)
+
+	err = db.Delete(session, core.Bytes("hello"))
+	assert.Nil(t, err)
+	r, err = db.Get(session, core.Bytes("hello"))
+	assert.Nil(t, r)
+	assert.Equal(t, err, core.ErrKeyNotFound)
+
+	// delete again
+	err = db.Delete(session, core.Bytes("hello"))
+	assert.Nil(t, err)
+	r, err = db.Get(session, core.Bytes("hello"))
+	assert.Nil(t, r)
+	assert.Equal(t, err, core.ErrKeyNotFound)
+
+	_ = db.Put(session, core.Bytes("hello"), core.Bytes("world"))
+	_ = db.Put(session, core.Bytes("hello"), core.Bytes("world2"))
+	_ = db.Put(session, core.Bytes("hello"), core.Bytes("updated world"))
+	r, _ = db.Get(session, core.Bytes("hello"))
+	assert.Equal(t, core.Bytes("updated world"), r)
+	err = db.Delete(session, core.Bytes("hello"))
+	assert.Nil(t, err)
+	r, err = db.Get(session, core.Bytes("hello"))
+	assert.Nil(t, r)
+	assert.Equal(t, err, core.ErrKeyNotFound)
+}
+
+func TestDatabase_Put_Update_Delete(t *testing.T) {
+	db := OpenBytesDb()
+	assert.NotNil(t, db)
+	t.Cleanup(func() {
+		db.RemoveAllData(session)
+	})
+	err := db.Put(session, core.Bytes("hello"), core.Bytes("world"))
+	assert.Nil(t, err)
+	r, err := db.Get(session, core.Bytes("hello"))
+	assert.Nil(t, err)
+	assert.Equal(t, core.Bytes("world"), r)
+
+	err = db.Put(session, core.Bytes("hello"), core.Bytes("updated world"))
+	assert.Nil(t, err)
+	r, _ = db.Get(session, core.Bytes("hello"))
+	assert.Equal(t, core.Bytes("updated world"), r)
+	err = db.Delete(session, core.Bytes("hello"))
+	assert.Nil(t, err)
+	r, err = db.Get(session, core.Bytes("hello"))
+	assert.Nil(t, r)
+	assert.Equal(t, err, core.ErrKeyNotFound)
+}
