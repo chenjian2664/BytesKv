@@ -17,6 +17,10 @@ package hash
 import (
 	"BytesDB/core"
 	"errors"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"sort"
 )
 
 type LocalHashIndex struct {
@@ -78,9 +82,43 @@ func (idx *LocalHashIndex) Iterator(reverse bool) (core.Iterator, error) {
 }
 
 func NewLocalHashIndex(rootPath string) *LocalHashIndex {
-	return &LocalHashIndex{
+	// TODO: remove It's strange to create the dir in index part
+	err := os.MkdirAll(rootPath, 0777)
+	if err != nil {
+		panic(err)
+	}
+	localIndex := &LocalHashIndex{
 		index:    make(map[string]*core.RecordPosition),
 		rootPath: rootPath,
+	}
+	localIndex.loadIndex()
+	return localIndex
+}
+
+func (idx *LocalHashIndex) loadIndex() {
+	idx.index = make(map[string]*core.RecordPosition)
+
+	// TODO: support loading from hint file
+
+	// Now, load from data file by default
+	err := filepath.WalkDir(idx.rootPath, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		var fileNames []string
+		// Check if the file has a .data suffix
+		if !d.IsDir() && filepath.Ext(d.Name()) == ".data" {
+			fileNames = append(fileNames, path)
+		}
+
+		sort.Strings(fileNames)
+		// TODO: shall we read the file in index?
+		return nil
+	})
+
+	if err != nil {
+		panic(err)
 	}
 }
 

@@ -21,7 +21,7 @@ import (
 	"testing"
 )
 
-var path = "/var/tmp/bytesdb"
+var path = "/tmp/bytesdb"
 
 func TestNewIndexManager(t *testing.T) {
 	im := NewLocalHashIndex(path)
