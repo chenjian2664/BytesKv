@@ -15,8 +15,10 @@ limitations under the License.
 package index
 
 import (
+	"BytesDB/config"
 	"BytesDB/core"
 	"BytesDB/index/hash"
+	"path/filepath"
 	"sync"
 )
 
@@ -29,12 +31,14 @@ const (
 type IndexManager struct {
 	indexes map[core.Session]core.Index
 	mutex   sync.RWMutex
+	cfg     *config.DBConfig
 }
 
-func NewIndexManager() *IndexManager {
+func NewIndexManager(cfg *config.DBConfig) *IndexManager {
 	return &IndexManager{
-		make(map[core.Session]core.Index),
-		sync.RWMutex{},
+		indexes: make(map[core.Session]core.Index),
+		mutex:   sync.RWMutex{},
+		cfg:     cfg,
 	}
 }
 
@@ -90,7 +94,8 @@ func (im *IndexManager) initializeIndex(typ IndexType, id core.Session) {
 
 	switch typ {
 	case Local_Hash:
-		im.indexes[id] = hash.NewLocalHashIndex()
+		path := filepath.Join(im.cfg.DataDir, id.Schema, id.Table)
+		im.indexes[id] = hash.NewLocalHashIndex(path)
 		return
 
 	default:

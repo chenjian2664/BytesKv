@@ -20,7 +20,8 @@ import (
 )
 
 type LocalHashIndex struct {
-	index map[string]*core.RecordPosition
+	index    map[string]*core.RecordPosition
+	rootPath string
 }
 
 type iterator struct {
@@ -76,9 +77,10 @@ func (idx *LocalHashIndex) Iterator(reverse bool) (core.Iterator, error) {
 	}, nil
 }
 
-func NewLocalHashIndex() *LocalHashIndex {
+func NewLocalHashIndex(rootPath string) *LocalHashIndex {
 	return &LocalHashIndex{
-		index: make(map[string]*core.RecordPosition),
+		index:    make(map[string]*core.RecordPosition),
+		rootPath: rootPath,
 	}
 }
 
