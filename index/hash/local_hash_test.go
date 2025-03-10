@@ -17,16 +17,26 @@ package hash
 import (
 	"BytesDB/core"
 	"github.com/stretchr/testify/assert"
+	"os"
 	"testing"
 )
 
+var path = "/var/tmp/bytesdb"
+
 func TestNewIndexManager(t *testing.T) {
-	im := NewLocalHashIndex()
+	im := NewLocalHashIndex(path)
+	t.Cleanup(
+		func() {
+			os.RemoveAll(path)
+		})
 	assert.NotNil(t, im)
 }
 
 func TestIndexManager_Put(t *testing.T) {
-	im := NewLocalHashIndex()
+	im := NewLocalHashIndex(path)
+	t.Cleanup(func() {
+		os.RemoveAll(path)
+	})
 	assert.NotNil(t, im)
 
 	pos := &core.RecordPosition{
@@ -51,7 +61,10 @@ func TestIndexManager_Put(t *testing.T) {
 }
 
 func TestIndexManager_Get(t *testing.T) {
-	im := NewLocalHashIndex()
+	im := NewLocalHashIndex(path)
+	t.Cleanup(func() {
+		os.RemoveAll(path)
+	})
 	assert.NotNil(t, im)
 
 	pos := &core.RecordPosition{
@@ -76,7 +89,10 @@ func TestIndexManager_Get(t *testing.T) {
 }
 
 func TestIndexManager_Delete(t *testing.T) {
-	im := NewLocalHashIndex()
+	im := NewLocalHashIndex(path)
+	t.Cleanup(func() {
+		os.RemoveAll(path)
+	})
 	assert.NotNil(t, im)
 
 	pos := &core.RecordPosition{}
@@ -102,7 +118,10 @@ func TestIndexManager_Delete(t *testing.T) {
 }
 
 func TestLocalHashIndex_Iterator(t *testing.T) {
-	im := NewLocalHashIndex()
+	im := NewLocalHashIndex(path)
+	t.Cleanup(func() {
+		os.RemoveAll(path)
+	})
 	assert.NotNil(t, im)
 
 	it, err := im.Iterator(false)

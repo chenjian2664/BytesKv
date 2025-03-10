@@ -37,7 +37,7 @@ func OpenBytesDb() *Database {
 
 	return &Database{
 		options: cfg,
-		im:      index.NewIndexManager(),
+		im:      index.NewIndexManager(cfg),
 		sm:      storage.NewStorageManager(cfg),
 	}
 }
