@@ -16,9 +16,9 @@ package hash
 
 import (
 	"BytesDB/core"
+	"BytesDB/storage/file"
 	"errors"
-	"io/fs"
-	"path/filepath"
+	"io"
 	"sort"
 )
 
@@ -75,6 +75,8 @@ func (idx *LocalHashIndex) Iterator(reverse bool) (core.Iterator, error) {
 		keys = append(keys, item)
 		values = append(values, idx.index[item])
 	}
+
+	sort.Strings(keys) // it's sort for testing, it not guarantee that the hash index keys are sorted
 	return &iterator{
 		idx:    0,
 		keys:   keys,
@@ -86,6 +88,8 @@ func NewLocalHashIndex(rootPath, schema, table string) *LocalHashIndex {
 	localIndex := &LocalHashIndex{
 		index:    make(map[string]*core.RecordPosition),
 		rootPath: rootPath,
+		schema:   schema,
+		table:    table,
 	}
 	localIndex.loadIndex()
 	return localIndex
@@ -93,28 +97,22 @@ func NewLocalHashIndex(rootPath, schema, table string) *LocalHashIndex {
 
 func (idx *LocalHashIndex) loadIndex() {
 	idx.index = make(map[string]*core.RecordPosition)
-
 	// TODO: support loading from hint file
-
-	// Now, load from data file by default
-	err := filepath.WalkDir(idx.rootPath, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-
-		var fileNames []string
-		// Check if the file has a .data suffix
-		if !d.IsDir() && filepath.Ext(d.Name()) == ".data" {
-			fileNames = append(fileNames, path)
-		}
-
-		sort.Strings(fileNames)
-		// TODO: shall we read the file in index?
-		return nil
-	})
-
+	// TODO: consider a better way to call this
+	storage, err := file.NewLocalFileStorage(idx.rootPath, idx.schema, idx.table)
 	if err != nil {
 		panic(err)
+	}
+	pi, _ := storage.PositionIterator()
+
+	for item, key, err := pi.Next(); item != nil && key != nil; item, key, err = pi.Next() {
+		idx.index[string(key)] = item
+		if err == io.EOF {
+			return
+		}
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
