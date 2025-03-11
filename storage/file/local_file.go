@@ -16,9 +16,12 @@ package file
 
 import (
 	"BytesDB/core"
+	"encoding/binary"
 	"fmt"
+	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"sync"
@@ -144,6 +147,13 @@ func (fio *fileStorage) Close() error {
 	return fio.activeFile.Close()
 }
 
+func (fio *fileStorage) PositionIterator() (core.PositionIterator, error) {
+	return &FilePositionIterator{
+		files:   fio.oldFiles,
+		dataDir: path.Join(fio.rootPath, fio.schema, fio.tableName),
+	}, nil
+}
+
 func (fio *fileStorage) Size() (int64, error) {
 	stat, err := fio.activeFile.Stat()
 	if err != nil {
@@ -160,4 +170,67 @@ func (fio *fileStorage) RemoveAll() error {
 func (fio *fileStorage) CleanAll(id core.Session) error {
 	tableLocation := path.Join(fio.rootPath, id.Schema, id.Table)
 	return os.RemoveAll(tableLocation)
+}
+
+type FilePositionIterator struct {
+	index   int
+	pos     int
+	files   []string
+	dataDir string
+	cur     *os.File
+}
+
+func (fpi *FilePositionIterator) Next() (*core.RecordPosition, error) {
+	if fpi.index >= len(fpi.files) {
+		return nil, io.EOF
+	}
+
+	if fpi.cur == nil {
+		file, err := os.Open(filepath.Join(fpi.dataDir, fpi.files[fpi.index]))
+		if err != nil {
+			return nil, err
+		}
+		fpi.cur = file
+		fpi.pos = 0
+	}
+
+	pos := fpi.pos
+	stat, err := fpi.cur.Stat()
+	if err != nil {
+		panic(err)
+	}
+	if int64(pos+5) >= stat.Size() {
+		fpi.index += 1
+		fpi.cur = nil
+		return fpi.Next()
+	}
+
+	// Read the data
+	buf := make(core.Bytes, core.MaxLogRecordHeaderSize)
+	n, err := fpi.cur.ReadAt(buf, int64(pos))
+	if err != nil && err != io.EOF {
+		return nil, err
+	}
+
+	if n > 0 {
+		// decode buf[:n]
+		// [0,4) crc
+		// 4 type
+		// [4, x) keySize
+		// [x, y) valueSize
+		index := 5
+		keySize, n := binary.Varint(buf[index:])
+		index += n
+		valueSize, n := binary.Varint(buf[index:])
+		index += n
+
+		index += int(keySize) + int(valueSize)
+
+		return &core.RecordPosition{
+			Position: int64(pos),
+			Size:     index,
+		}, nil
+	}
+
+	return nil, io.EOF
 }
