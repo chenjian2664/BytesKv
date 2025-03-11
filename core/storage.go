@@ -41,5 +41,5 @@ type Storage interface {
 }
 
 type PositionIterator interface {
-	Next() (*RecordPosition, error)
+	Next() (*RecordPosition, Bytes, error)
 }

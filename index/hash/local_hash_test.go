@@ -22,9 +22,11 @@ import (
 )
 
 var path = "/tmp/bytesdb"
+var schema = "test"
+var table = "test"
 
 func TestNewIndexManager(t *testing.T) {
-	im := NewLocalHashIndex(path)
+	im := NewLocalHashIndex(path, schema, table)
 	t.Cleanup(
 		func() {
 			os.RemoveAll(path)
@@ -33,7 +35,7 @@ func TestNewIndexManager(t *testing.T) {
 }
 
 func TestIndexManager_Put(t *testing.T) {
-	im := NewLocalHashIndex(path)
+	im := NewLocalHashIndex(path, schema, table)
 	t.Cleanup(func() {
 		os.RemoveAll(path)
 	})
@@ -61,7 +63,7 @@ func TestIndexManager_Put(t *testing.T) {
 }
 
 func TestIndexManager_Get(t *testing.T) {
-	im := NewLocalHashIndex(path)
+	im := NewLocalHashIndex(path, schema, table)
 	t.Cleanup(func() {
 		os.RemoveAll(path)
 	})
@@ -89,7 +91,7 @@ func TestIndexManager_Get(t *testing.T) {
 }
 
 func TestIndexManager_Delete(t *testing.T) {
-	im := NewLocalHashIndex(path)
+	im := NewLocalHashIndex(path, schema, table)
 	t.Cleanup(func() {
 		os.RemoveAll(path)
 	})
@@ -118,7 +120,7 @@ func TestIndexManager_Delete(t *testing.T) {
 }
 
 func TestLocalHashIndex_Iterator(t *testing.T) {
-	im := NewLocalHashIndex(path)
+	im := NewLocalHashIndex(path, schema, table)
 	t.Cleanup(func() {
 		os.RemoveAll(path)
 	})
