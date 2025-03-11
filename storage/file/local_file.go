@@ -226,6 +226,7 @@ func (fpi *FilePositionIterator) Next() (*core.RecordPosition, error) {
 
 		index += int(keySize) + int(valueSize)
 
+		fpi.pos += index
 		return &core.RecordPosition{
 			Position: int64(pos),
 			Size:     index,

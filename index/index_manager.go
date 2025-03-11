@@ -31,14 +31,16 @@ const (
 type IndexManager struct {
 	indexes map[core.Session]core.Index
 	mutex   sync.RWMutex
-	cfg     *config.DBConfig
+	typ     IndexType
+	dataDir string
 }
 
 func NewIndexManager(cfg *config.DBConfig) *IndexManager {
 	return &IndexManager{
 		indexes: make(map[core.Session]core.Index),
 		mutex:   sync.RWMutex{},
-		cfg:     cfg,
+		typ:     resolveIndexType(cfg.IndexType),
+		dataDir: cfg.DataDir,
 	}
 }
 
@@ -77,9 +79,22 @@ func (im *IndexManager) RemoveAllData(session core.Session) {
 	im.indexes = make(map[core.Session]core.Index)
 }
 
+func resolveIndexType(typ string) IndexType {
+	// by default
+	if typ == "" {
+		return Local_Hash
+	}
+	switch typ {
+	case "local_hash":
+		return Local_Hash
+	default:
+		panic("unknown index type")
+	}
+}
+
 func (im *IndexManager) resolve(id core.Session) core.Index {
 	if _, ok := im.indexes[id]; !ok {
-		im.initializeIndex(Local_Hash, id)
+		im.initializeIndex(im.typ, id)
 	}
 	return im.indexes[id]
 }
@@ -94,7 +109,7 @@ func (im *IndexManager) initializeIndex(typ IndexType, id core.Session) {
 
 	switch typ {
 	case Local_Hash:
-		path := filepath.Join(im.cfg.DataDir, id.Schema, id.Table)
+		path := filepath.Join(im.dataDir, id.Schema, id.Table)
 		im.indexes[id] = hash.NewLocalHashIndex(path)
 		return
 
