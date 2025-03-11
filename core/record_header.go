@@ -20,7 +20,7 @@ import (
 
 // crc type keySize valueSize
 // 4    1    5 			5		= 15
-const maxLogRecordHeaderSize = 4 + 1 + binary.MaxVarintLen32*2
+const MaxLogRecordHeaderSize = 4 + 1 + binary.MaxVarintLen32*2
 
 // RecordHeader the header of the record
 type RecordHeader struct {
@@ -31,7 +31,7 @@ type RecordHeader struct {
 }
 
 func (rh *RecordHeader) Pack() Bytes {
-	header := make(Bytes, maxLogRecordHeaderSize)
+	header := make(Bytes, MaxLogRecordHeaderSize)
 
 	// crc
 	binary.LittleEndian.PutUint32(header[:4], rh.Crc)

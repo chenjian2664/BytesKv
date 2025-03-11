@@ -40,7 +40,7 @@ type Record struct {
 }
 
 func (r *Record) PackHeader() Bytes {
-	header := make(Bytes, maxLogRecordHeaderSize)
+	header := make(Bytes, MaxLogRecordHeaderSize)
 	// type
 	header[4] = byte(r.Type)
 

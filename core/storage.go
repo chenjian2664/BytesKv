@@ -36,4 +36,10 @@ type Storage interface {
 
 	// Note: this is only used for the test purpose
 	RemoveAll() error
+
+	PositionIterator() (PositionIterator, error)
+}
+
+type PositionIterator interface {
+	Next() (*RecordPosition, error)
 }
