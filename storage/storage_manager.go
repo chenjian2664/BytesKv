@@ -56,8 +56,8 @@ func resolveStorageType(typ string) StorageType {
 	}
 }
 
-func (sm *StorageManager) Read(position core.RecordPosition) *core.Record {
-	storage := sm.resolveStorage(position.Session)
+func (sm *StorageManager) Read(session core.Session, position *core.RecordPosition) *core.Record {
+	storage := sm.resolveStorage(session)
 
 	// TODO: consider shall we reader header separately, instead of read whole record size
 	bytes := make(core.Bytes, position.Size)
@@ -70,7 +70,7 @@ func (sm *StorageManager) Read(position core.RecordPosition) *core.Record {
 }
 
 // append
-func (sm *StorageManager) Write(session core.Session, record *core.Record) core.RecordPosition {
+func (sm *StorageManager) Write(session core.Session, record *core.Record) *core.RecordPosition {
 	storage := sm.resolveStorage(session)
 	bytes := record.Pack()
 	write, err := storage.Write(bytes)
@@ -81,14 +81,13 @@ func (sm *StorageManager) Write(session core.Session, record *core.Record) core.
 	// TODO: maybe we could record the stats here instead of ask storage everytime
 	sz, _ := storage.Size()
 
-	return core.RecordPosition{
-		Session:  session,
+	return &core.RecordPosition{
 		Position: sz - int64(write),
 		Size:     write,
 	}
 }
 
-func (sm *StorageManager) Delete(session core.Session, key core.Bytes) core.RecordPosition {
+func (sm *StorageManager) Delete(session core.Session, key core.Bytes) *core.RecordPosition {
 	record := &core.Record{
 		Key:   key,
 		Value: core.Bytes{},
