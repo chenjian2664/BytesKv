@@ -180,15 +180,15 @@ type FilePositionIterator struct {
 	cur     *os.File
 }
 
-func (fpi *FilePositionIterator) Next() (*core.RecordPosition, error) {
+func (fpi *FilePositionIterator) Next() (*core.RecordPosition, core.Bytes, error) {
 	if fpi.index >= len(fpi.files) {
-		return nil, io.EOF
+		return nil, nil, io.EOF
 	}
 
 	if fpi.cur == nil {
 		file, err := os.Open(filepath.Join(fpi.dataDir, fpi.files[fpi.index]))
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		fpi.cur = file
 		fpi.pos = 0
@@ -209,7 +209,7 @@ func (fpi *FilePositionIterator) Next() (*core.RecordPosition, error) {
 	buf := make(core.Bytes, core.MaxLogRecordHeaderSize)
 	n, err := fpi.cur.ReadAt(buf, int64(pos))
 	if err != nil && err != io.EOF {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if n > 0 {
@@ -224,14 +224,20 @@ func (fpi *FilePositionIterator) Next() (*core.RecordPosition, error) {
 		valueSize, n := binary.Varint(buf[index:])
 		index += n
 
+		buf = make(core.Bytes, keySize)
+		_, err := fpi.cur.ReadAt(buf, int64(pos+index))
+		if err != nil {
+			return nil, nil, err
+		}
+
 		index += int(keySize) + int(valueSize)
 
 		fpi.pos += index
 		return &core.RecordPosition{
 			Position: int64(pos),
 			Size:     index,
-		}, nil
+		}, buf, nil
 	}
 
-	return nil, io.EOF
+	return nil, nil, io.EOF
 }

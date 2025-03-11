@@ -18,6 +18,7 @@ import (
 	"BytesDB/config"
 	"BytesDB/core"
 	"BytesDB/index/hash"
+	"os"
 	"path/filepath"
 	"sync"
 )
@@ -110,7 +111,12 @@ func (im *IndexManager) initializeIndex(typ IndexType, id core.Session) {
 	switch typ {
 	case Local_Hash:
 		path := filepath.Join(im.dataDir, id.Schema, id.Table)
-		im.indexes[id] = hash.NewLocalHashIndex(path)
+		// TODO: remove It's strange to create the dir in index part
+		err := os.MkdirAll(path, 0777)
+		if err != nil {
+			panic(err)
+		}
+		im.indexes[id] = hash.NewLocalHashIndex(im.dataDir, id.Schema, id.Table)
 		return
 
 	default:

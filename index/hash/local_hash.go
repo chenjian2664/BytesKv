@@ -18,7 +18,6 @@ import (
 	"BytesDB/core"
 	"errors"
 	"io/fs"
-	"os"
 	"path/filepath"
 	"sort"
 )
@@ -26,6 +25,8 @@ import (
 type LocalHashIndex struct {
 	index    map[string]*core.RecordPosition
 	rootPath string
+	schema   string
+	table    string
 }
 
 type iterator struct {
@@ -81,12 +82,7 @@ func (idx *LocalHashIndex) Iterator(reverse bool) (core.Iterator, error) {
 	}, nil
 }
 
-func NewLocalHashIndex(rootPath string) *LocalHashIndex {
-	// TODO: remove It's strange to create the dir in index part
-	err := os.MkdirAll(rootPath, 0777)
-	if err != nil {
-		panic(err)
-	}
+func NewLocalHashIndex(rootPath, schema, table string) *LocalHashIndex {
 	localIndex := &LocalHashIndex{
 		index:    make(map[string]*core.RecordPosition),
 		rootPath: rootPath,
