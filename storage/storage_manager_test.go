@@ -50,7 +50,6 @@ func TestStorageManager_Write(t *testing.T) {
 
 	pos := sm.Write(sid, record)
 	assert.NotNil(t, pos)
-	assert.Equal(t, sid, pos.Session)
 	assert.Equal(t, position, pos.Position)
 	assert.Equal(t, len(record.Pack()), pos.Size)
 
@@ -82,11 +81,10 @@ func TestStorageManager_Read(t *testing.T) {
 
 	pos := sm.Write(sid, record)
 	assert.NotNil(t, pos)
-	assert.Equal(t, sid, pos.Session)
 	assert.Equal(t, position, pos.Position)
 	assert.Equal(t, len(record.Pack()), pos.Size)
 
-	read := sm.Read(pos)
+	read := sm.Read(sid, pos)
 	assert.Equal(t, record, read)
 
 	position += int64(pos.Size)
@@ -97,10 +95,9 @@ func TestStorageManager_Read(t *testing.T) {
 	}
 	pos = sm.Write(sid, record)
 	assert.NotNil(t, pos)
-	assert.Equal(t, pos.Session, sid)
 	assert.Equal(t, pos.Position, position)
 	assert.Equal(t, pos.Size, len(record.Pack()))
-	read = sm.Read(pos)
+	read = sm.Read(sid, pos)
 	assert.Equal(t, record, read)
 }
 
@@ -120,11 +117,10 @@ func TestStorageManager_Remove(t *testing.T) {
 
 	pos := sm.Write(sid, record)
 	assert.NotNil(t, pos)
-	assert.Equal(t, sid, pos.Session)
 	assert.Equal(t, position, pos.Position)
 	assert.Equal(t, len(record.Pack()), pos.Size)
 
-	read := sm.Read(pos)
+	read := sm.Read(sid, pos)
 	assert.Equal(t, record, read)
 
 	// Delete actual write a Deleted type record
@@ -134,6 +130,6 @@ func TestStorageManager_Remove(t *testing.T) {
 		Value: core.Bytes{},
 		Type:  core.Deleted,
 	}
-	writeDeleted := sm.Read(pos)
+	writeDeleted := sm.Read(sid, pos)
 	assert.Equal(t, deleted, writeDeleted)
 }

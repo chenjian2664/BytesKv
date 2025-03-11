@@ -49,7 +49,7 @@ func (db *Database) Put(Session core.Session, key, value core.Bytes) error {
 		Type:  core.Normal,
 	}
 	pos := db.sm.Write(Session, record)
-	_, err := db.im.Put(Session, key, &pos)
+	_, err := db.im.Put(Session, key, pos)
 	return err
 }
 
@@ -63,7 +63,7 @@ func (db *Database) Get(session core.Session, key core.Bytes) (core.Bytes, error
 		panic("error get position, supposed to return error")
 	}
 
-	record := db.sm.Read(*pos)
+	record := db.sm.Read(session, pos)
 	return record.Value, nil
 }
 
