@@ -80,6 +80,12 @@ func (im *IndexManager) RemoveAllData(session core.Session) {
 	im.indexes = make(map[core.Session]core.Index)
 }
 
+func (im *IndexManager) Close() {
+	im.mutex.Lock()
+	defer im.mutex.Unlock()
+	im.indexes = nil
+}
+
 func resolveIndexType(typ string) IndexType {
 	// by default
 	if typ == "" {

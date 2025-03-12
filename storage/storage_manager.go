@@ -103,6 +103,14 @@ func (sm *StorageManager) RemoveAllData(sid core.Session) {
 	_ = sm.resolveStorage(sid).RemoveAll()
 }
 
+func (sm *StorageManager) Close() {
+	sm.mutex.Lock()
+	defer sm.mutex.Unlock()
+	for _, storage := range sm.storages {
+		_ = storage.Close()
+	}
+}
+
 func (sm *StorageManager) resolveStorage(sid core.Session) core.Storage {
 	if _, ok := sm.storages[sid]; !ok {
 		sm.initializeStorage(sm.typ, sid)
