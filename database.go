@@ -93,5 +93,9 @@ func (db *Database) RemoveAllData(session core.Session) {
 }
 
 func (db *Database) Close() {
-	// TODO: implement it
+	db.sm.Close()
+	db.sm = nil
+
+	db.im.Close()
+	db.im = nil
 }

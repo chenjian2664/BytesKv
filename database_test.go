@@ -109,3 +109,12 @@ func TestDatabase_Put_Update_Delete(t *testing.T) {
 	assert.Nil(t, r)
 	assert.Equal(t, err, core.ErrKeyNotFound)
 }
+
+func TestDatabase_Close(t *testing.T) {
+	db := OpenBytesDb()
+	assert.NotNil(t, db)
+
+	db.Close()
+	assert.Nil(t, db.im)
+	assert.Nil(t, db.sm)
+}
