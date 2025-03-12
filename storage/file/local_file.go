@@ -148,7 +148,7 @@ func (fio *fileStorage) Close() error {
 }
 
 func (fio *fileStorage) PositionIterator() (core.PositionIterator, error) {
-	return &FilePositionIterator{
+	return &PositionIterator{
 		files:   fio.oldFiles,
 		dataDir: path.Join(fio.rootPath, fio.schema, fio.tableName),
 	}, nil
@@ -172,7 +172,7 @@ func (fio *fileStorage) CleanAll(id core.Session) error {
 	return os.RemoveAll(tableLocation)
 }
 
-type FilePositionIterator struct {
+type PositionIterator struct {
 	index   int
 	pos     int
 	files   []string
@@ -180,7 +180,7 @@ type FilePositionIterator struct {
 	cur     *os.File
 }
 
-func (fpi *FilePositionIterator) Next() (*core.RecordPosition, core.Bytes, error) {
+func (fpi *PositionIterator) Next() (*core.RecordPosition, core.Bytes, error) {
 	if fpi.index >= len(fpi.files) {
 		return nil, nil, io.EOF
 	}
