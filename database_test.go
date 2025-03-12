@@ -17,6 +17,7 @@ package BytesDB
 import (
 	"BytesDB/core"
 	"github.com/stretchr/testify/assert"
+	"strconv"
 	"testing"
 )
 
@@ -117,4 +118,58 @@ func TestDatabase_Close(t *testing.T) {
 	db.Close()
 	assert.Nil(t, db.im)
 	assert.Nil(t, db.sm)
+}
+
+// test database closed then startup, with the correct data being loaded
+func TestDatabase_Startup(t *testing.T) {
+	db := OpenBytesDb()
+	assert.NotNil(t, db)
+
+	t.Cleanup(func() {
+		db.RemoveAllData(session)
+	})
+
+	for i := 0; i < 100; i++ {
+		_ = db.Put(session, core.Bytes(strconv.Itoa(i)), core.Bytes(strconv.Itoa(i)))
+	}
+	// test the writing correctly
+	for i := 0; i < 100; i++ {
+		val, err := db.Get(session, core.Bytes(strconv.Itoa(i)))
+		assert.Nil(t, err)
+		assert.Equal(t, core.Bytes(strconv.Itoa(i)), val)
+	}
+
+	db.Close()
+	assert.Nil(t, db.im)
+	assert.Nil(t, db.sm)
+
+	// reopen db with the same properties
+	db = OpenBytesDb()
+	assert.NotNil(t, db)
+	// test the data exists
+	for i := 0; i < 100; i++ {
+		val, err := db.Get(session, core.Bytes(strconv.Itoa(i)))
+		assert.Nil(t, err)
+		assert.Equal(t, core.Bytes(strconv.Itoa(i)), val)
+	}
+
+	err := db.Delete(session, core.Bytes(strconv.Itoa(100)))
+	assert.Nil(t, err)
+
+	db.Close()
+	assert.Nil(t, db.im)
+	assert.Nil(t, db.sm)
+
+	db = OpenBytesDb()
+	assert.NotNil(t, db)
+
+	// reopen
+	for i := 0; i < 99; i++ {
+		val, err := db.Get(session, core.Bytes(strconv.Itoa(i)))
+		assert.Nil(t, err)
+		assert.Equal(t, core.Bytes(strconv.Itoa(i)), val)
+	}
+	val, err := db.Get(session, core.Bytes(strconv.Itoa(100)))
+	assert.Nil(t, val)
+	assert.Equal(t, err, core.ErrKeyNotFound)
 }

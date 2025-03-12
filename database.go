@@ -88,8 +88,13 @@ func (db *Database) Keys(session core.Session) []core.Bytes {
 
 // RemoveAllData Note this only for test
 func (db *Database) RemoveAllData(session core.Session) {
-	db.im.RemoveAllData(session)
-	db.sm.RemoveAllData(session)
+	if db.im != nil {
+		db.im.RemoveAllData(session)
+	}
+
+	if db.sm != nil {
+		db.sm.RemoveAllData(session)
+	}
 }
 
 func (db *Database) Close() {
