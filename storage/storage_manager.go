@@ -111,6 +111,11 @@ func (sm *StorageManager) Close() {
 	}
 }
 
+func (sm *StorageManager) Size(session core.Session) (int64, error) {
+	storage := sm.resolveStorage(session)
+	return storage.Size()
+}
+
 func (sm *StorageManager) resolveStorage(sid core.Session) core.Storage {
 	if _, ok := sm.storages[sid]; !ok {
 		sm.initializeStorage(sm.typ, sid)
