@@ -151,11 +151,12 @@ func TestStorageManager_Size(t *testing.T) {
 
 	pos := sm.Write(sid, record)
 	sz, err = sm.Size(sid)
+	assert.Nil(t, err)
 	assert.NotNil(t, pos)
 	assert.Equal(t, record.Pack().Size(), uint32(pos.Size))
 	assert.Equal(t, int64(record.Pack().Size()), sz)
 
-	pos = sm.Delete(sid, core.Bytes("hello"))
+	_ = sm.Delete(sid, core.Bytes("hello"))
 	nsz, err := sm.Size(sid)
 	assert.Nil(t, err)
 	assert.True(t, nsz > sz)

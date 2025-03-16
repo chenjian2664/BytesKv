@@ -173,3 +173,42 @@ func TestDatabase_Startup(t *testing.T) {
 	assert.Nil(t, val)
 	assert.Equal(t, err, core.ErrKeyNotFound)
 }
+
+func TestDatabase_Startup_Delete_Size(t *testing.T) {
+	db := OpenBytesDb()
+	assert.NotNil(t, db)
+
+	t.Cleanup(func() {
+		db.RemoveAllData(session)
+	})
+
+	for i := 0; i < 100; i++ {
+		_ = db.Put(session, core.Bytes(strconv.Itoa(i)), core.Bytes(strconv.Itoa(i)))
+	}
+	// test the writing correctly
+	for i := 0; i < 100; i++ {
+		val, err := db.Get(session, core.Bytes(strconv.Itoa(i)))
+		assert.Nil(t, err)
+		assert.Equal(t, core.Bytes(strconv.Itoa(i)), val)
+	}
+	sz, err := db.sm.Size(session)
+	assert.Nil(t, err)
+
+	err = db.Delete(session, core.Bytes(strconv.Itoa(0)))
+	assert.Nil(t, err)
+
+	nsz, err := db.sm.Size(session)
+	assert.Nil(t, err)
+	assert.True(t, nsz > sz)
+
+	rd, err := db.Get(session, core.Bytes(strconv.Itoa(0)))
+	assert.Nil(t, rd)
+	assert.Equal(t, err, core.ErrKeyNotFound)
+
+	err = db.Delete(session, core.Bytes("Key not exists in db"))
+	assert.Nil(t, err)
+	sz, err = db.sm.Size(session)
+	assert.Nil(t, err)
+	// Not write the data as the key not exists and stop after the memo index checking
+	assert.Equal(t, nsz, sz)
+}
