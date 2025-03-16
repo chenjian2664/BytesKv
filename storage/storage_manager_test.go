@@ -133,3 +133,30 @@ func TestStorageManager_Remove(t *testing.T) {
 	writeDeleted := sm.Read(sid, pos)
 	assert.Equal(t, deleted, writeDeleted)
 }
+
+func TestStorageManager_Size(t *testing.T) {
+	sm := NewStorageManager(dbconfig)
+	t.Cleanup(func() {
+		sm.RemoveAllData(sid)
+	})
+	sz, err := sm.Size(sid)
+	assert.Nil(t, err)
+	assert.Equal(t, int64(0), sz)
+
+	record := &core.Record{
+		Key:   core.Bytes("hello"),
+		Value: core.Bytes("world!"),
+		Type:  core.Normal,
+	}
+
+	pos := sm.Write(sid, record)
+	sz, err = sm.Size(sid)
+	assert.NotNil(t, pos)
+	assert.Equal(t, record.Pack().Size(), uint32(pos.Size))
+	assert.Equal(t, int64(record.Pack().Size()), sz)
+
+	pos = sm.Delete(sid, core.Bytes("hello"))
+	nsz, err := sm.Size(sid)
+	assert.Nil(t, err)
+	assert.True(t, nsz > sz)
+}
