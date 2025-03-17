@@ -105,8 +105,12 @@ func (idx *LocalHashIndex) loadIndex() {
 	}
 	pi, _ := storage.PositionIterator()
 
-	for item, key, err := pi.Next(); item != nil && key != nil; item, key, err = pi.Next() {
-		idx.index[string(key)] = item
+	for item, key, typ, err := pi.Next(); item != nil && key != nil; item, key, typ, err = pi.Next() {
+		if typ == core.Deleted {
+			delete(idx.index, string(key))
+		} else {
+			idx.index[string(key)] = item
+		}
 		if err == io.EOF {
 			return
 		}

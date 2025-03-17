@@ -18,6 +18,8 @@ import (
 	"BytesDB/config"
 	"BytesDB/core"
 	"github.com/stretchr/testify/assert"
+	"io"
+	"strconv"
 	"testing"
 )
 
@@ -160,4 +162,93 @@ func TestStorageManager_Size(t *testing.T) {
 	nsz, err := sm.Size(sid)
 	assert.Nil(t, err)
 	assert.True(t, nsz > sz)
+}
+
+func TestFilePositionIterator(t *testing.T) {
+	sm := NewStorageManager(dbconfig)
+	t.Cleanup(func() {
+		sm.RemoveAllData(sid)
+		sm.Close()
+	})
+	writeSize := 0
+	for i := 0; i < 10; i++ {
+		rd := &core.Record{
+			Key:   core.Bytes(strconv.Itoa(i)),
+			Value: core.Bytes("val" + strconv.Itoa(i)),
+			Type:  core.Normal,
+		}
+		sm.Write(sid, rd)
+		writeSize += int(rd.Pack().Size())
+	}
+	sm.Close()
+
+	sm = NewStorageManager(dbconfig)
+	storage := sm.resolveStorage(sid)
+	iterator, err := storage.PositionIterator()
+	assert.Nil(t, err)
+
+	// All normal type writes as expected
+	index := 0
+	for pos, key, typ, err := iterator.Next(); key != nil; pos, key, typ, err = iterator.Next() {
+		if err == io.EOF {
+			break
+		}
+		atoi, _ := strconv.Atoi(string(key))
+		assert.Nil(t, err)
+		assert.Equal(t, atoi, index)
+
+		assert.Equal(t, sm.Read(sid, pos), &core.Record{
+			Key:   core.Bytes(strconv.Itoa(index)),
+			Value: core.Bytes("val" + strconv.Itoa(index)),
+			Type:  core.Normal,
+		})
+		assert.Equal(t, typ, core.Normal)
+
+		index++
+	}
+
+	// write a deleted record
+	sm.Write(sid, &core.Record{
+		Key:   core.Bytes(strconv.Itoa(index)),
+		Value: core.Bytes("val" + strconv.Itoa(index)),
+		Type:  core.Deleted,
+	})
+	sm.Close()
+
+	sm = NewStorageManager(dbconfig)
+	storage = sm.resolveStorage(sid)
+	iterator, err = storage.PositionIterator()
+	assert.Nil(t, err)
+
+	index = 0
+	for pos, key, typ, err := iterator.Next(); key != nil; pos, key, typ, err = iterator.Next() {
+		if err == io.EOF {
+			break
+		}
+		if index < 10 {
+			atoi, _ := strconv.Atoi(string(key))
+			assert.Nil(t, err)
+			assert.Equal(t, atoi, index)
+
+			assert.Equal(t, sm.Read(sid, pos), &core.Record{
+				Key:   core.Bytes(strconv.Itoa(index)),
+				Value: core.Bytes("val" + strconv.Itoa(index)),
+				Type:  core.Normal,
+			})
+			assert.Equal(t, typ, core.Normal)
+		} else {
+			atoi, _ := strconv.Atoi(string(key))
+			assert.Nil(t, err)
+			assert.Equal(t, atoi, index)
+
+			assert.Equal(t, sm.Read(sid, pos), &core.Record{
+				Key:   core.Bytes(strconv.Itoa(index)),
+				Value: core.Bytes("val" + strconv.Itoa(index)),
+				Type:  core.Deleted,
+			})
+			assert.Equal(t, typ, core.Deleted)
+		}
+
+		index++
+	}
 }
