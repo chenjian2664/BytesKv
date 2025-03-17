@@ -16,15 +16,14 @@ package file
 
 import (
 	"BytesDB/core"
-	"BytesDB/storage"
+	"BytesDB/utils"
 	"encoding/binary"
-	"fmt"
 	"io"
 	"os"
 	"path"
 	"path/filepath"
 	"sort"
-	"strconv"
+	"strings"
 	"sync"
 )
 
@@ -60,15 +59,18 @@ func NewLocalFileStorage(rootPath, schema, table string) (core.Storage, error) {
 		if entry.IsDir() {
 			continue
 		}
-		// TODO: it is possible the dir contains other type file
-		fileNames = append(fileNames, entry.Name())
+		if strings.HasSuffix(entry.Name(), utils.DataFileSuffix) {
+			fileNames = append(fileNames, entry.Name())
+		} else {
+			// TODO: it is possible the dir contains other type file
+			panic("Unexpected file: " + entry.Name())
+		}
 	}
 	sort.Strings(fileNames)
 
 	var activePath string
 	if len(fileNames) == 0 {
-		// TODO: add util to unified the naming
-		activePath = dir + "/" + fmt.Sprintf("%10d"+storage.DataFileSuffix, 0)
+		activePath = dir + "/" + utils.BuildDataFileName(0)
 	} else {
 		activePath = dir + "/" + fileNames[len(fileNames)-1]
 	}
@@ -100,13 +102,9 @@ func (fio *fileStorage) createAndResetActiveFile() {
 	}
 
 	fio.oldFiles = append(fio.oldFiles, old)
-	// .data
-	next, err := strconv.ParseInt(old[:len(old)-5], 10, 64)
-	if err != nil {
-		panic(err)
-	}
 
-	activePath := path.Join(fio.rootPath, fio.schema, fio.tableName, fmt.Sprintf("%10d.data", next))
+	nextSeq := utils.GetFileSeqNo(old) + 1
+	activePath := path.Join(fio.rootPath, fio.schema, fio.tableName, utils.BuildDataFileName(nextSeq))
 	// note: append mode
 	activeFile, err := os.OpenFile(activePath, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0755)
 	if err != nil {

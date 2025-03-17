@@ -21,8 +21,6 @@ import (
 	"sync"
 )
 
-const DataFileSuffix = ".data"
-
 type StorageType = byte
 
 const (
