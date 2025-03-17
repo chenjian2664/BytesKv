@@ -16,6 +16,7 @@ package file
 
 import (
 	"BytesDB/core"
+	"BytesDB/storage"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -67,7 +68,7 @@ func NewLocalFileStorage(rootPath, schema, table string) (core.Storage, error) {
 	var activePath string
 	if len(fileNames) == 0 {
 		// TODO: add util to unified the naming
-		activePath = dir + "/" + fmt.Sprintf("%10d.data", 0)
+		activePath = dir + "/" + fmt.Sprintf("%10d"+storage.DataFileSuffix, 0)
 	} else {
 		activePath = dir + "/" + fileNames[len(fileNames)-1]
 	}
