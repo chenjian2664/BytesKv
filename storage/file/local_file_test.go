@@ -15,13 +15,11 @@ limitations under the License.
 package file
 
 import (
+	"BytesDB/core"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 )
-
-// TODO: add close() test
-// TODO: add write file exceed maxSize
 
 func TestNewLocalFileStorage(t *testing.T) {
 	fileName := "/tmp/local-file-manager-test"
@@ -46,27 +44,27 @@ func TestFileIO_Write(t *testing.T) {
 		os.Remove(fileName)
 	})
 
-	n, err := f.Write([]byte(nil))
+	n, err := f.Write(core.Bytes(nil))
 	assert.Nil(t, err)
 	assert.Equal(t, 0, n)
 
-	n, err = f.Write([]byte("hello world"))
+	n, err = f.Write(core.Bytes("hello world"))
 	assert.Nil(t, err)
 	assert.Equal(t, 11, n)
 
-	n, err = f.Write([]byte("\nhello world"))
+	n, err = f.Write(core.Bytes("\nhello world"))
 	assert.Nil(t, err)
 	assert.Equal(t, 12, n)
 
-	n, err = f.Write([]byte("hello world \n"))
+	n, err = f.Write(core.Bytes("hello world \n"))
 	assert.Nil(t, err)
 	assert.Equal(t, 13, n)
 
-	n, err = f.Write([]byte("你好"))
+	n, err = f.Write(core.Bytes("你好"))
 	assert.Nil(t, err)
 	assert.Equal(t, 6, n)
 
-	n, err = f.Write([]byte("😂"))
+	n, err = f.Write(core.Bytes("😂"))
 	assert.Nil(t, err)
 	assert.Equal(t, 4, n)
 }
@@ -84,32 +82,32 @@ func TestFileIO_Read(t *testing.T) {
 
 	idx := int64(0)
 
-	bs := []byte("hello world")
+	bs := core.Bytes("hello world")
 	n, err := f.Write(bs)
 	assert.Nil(t, err)
 	assert.Equal(t, len(bs), n)
-	buf := make([]byte, len(bs))
+	buf := make(core.Bytes, len(bs))
 	r, err := f.Read(buf, idx)
 	assert.Nil(t, err)
 	assert.Equal(t, len(buf), r)
 	assert.Equal(t, bs, buf)
 	idx += int64(r)
 
-	bs = []byte("你好")
+	bs = core.Bytes("你好")
 	n, err = f.Write(bs)
 	assert.Nil(t, err)
 	assert.Equal(t, len(bs), n)
-	buf = make([]byte, len(bs))
+	buf = make(core.Bytes, len(bs))
 	r, err = f.Read(buf, idx)
 	assert.Nil(t, err)
 	assert.Equal(t, len(bs), r)
 	idx += int64(r)
 
-	bs = []byte("😂")
+	bs = core.Bytes("😂")
 	n, err = f.Write(bs)
 	assert.Nil(t, err)
 	assert.Equal(t, len(bs), n)
-	buf = make([]byte, len(bs))
+	buf = make(core.Bytes, len(bs))
 	r, err = f.Read(buf, idx)
 	assert.Nil(t, err)
 	assert.Equal(t, len(bs), r)
@@ -126,19 +124,19 @@ func TestFileIO_Read_Not_Equal_Buffer_Size(t *testing.T) {
 		os.RemoveAll(fileName)
 	})
 
-	bs := []byte("hello world")
+	bs := core.Bytes("hello world")
 	n, err := f.Write(bs)
 	assert.Nil(t, err)
 	assert.Equal(t, len(bs), n)
 	// make buf longer than the exists data
-	buf := make([]byte, len(bs)+1)
+	buf := make(core.Bytes, len(bs)+1)
 	r, err := f.Read(buf, 0)
 	// EOF error and read all remain bytes
 	assert.EqualError(t, err, "EOF")
 	assert.Equal(t, len(bs), r)
 	assert.Equal(t, bs, buf[:r])
 
-	buf = make([]byte, len(bs)-1)
+	buf = make(core.Bytes, len(bs)-1)
 	r, err = f.Read(buf, 0)
 	assert.Nil(t, err)
 	// make buf smaller than the exists data
@@ -147,19 +145,19 @@ func TestFileIO_Read_Not_Equal_Buffer_Size(t *testing.T) {
 	assert.Equal(t, bs[:len(bs)-1], buf)
 
 	// Write another bytes
-	bs = []byte("你好")
+	bs = core.Bytes("你好")
 	n, err = f.Write(bs)
 	assert.Nil(t, err)
 	assert.Equal(t, n, len(bs))
-	buf = make([]byte, len(bs))
+	buf = make(core.Bytes, len(bs))
 	// success read second segment bytes
-	r, err = f.Read(buf, int64(len([]byte("hello world"))))
+	r, err = f.Read(buf, int64(len(core.Bytes("hello world"))))
 	assert.Nil(t, err)
 	assert.Equal(t, r, len(bs))
 	assert.Equal(t, bs, buf)
 	// success read second segments bytes but with EOF
-	buf = make([]byte, len(bs)+1)
-	r, err = f.Read(buf, int64(len([]byte("hello world"))))
+	buf = make(core.Bytes, len(bs)+1)
+	r, err = f.Read(buf, int64(len(core.Bytes("hello world"))))
 	assert.EqualError(t, err, "EOF")
 	assert.Equal(t, bs, buf[:r])
 }
@@ -175,7 +173,7 @@ func TestFileIO_Flush(t *testing.T) {
 		os.RemoveAll(fileName)
 	})
 
-	bs := []byte("hello world")
+	bs := core.Bytes("hello world")
 	_, err = f.Write(bs)
 	assert.Nil(t, err)
 	err = f.Flush()
@@ -185,7 +183,7 @@ func TestFileIO_Flush(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, f)
 
-	buf := make([]byte, len(bs))
+	buf := make(core.Bytes, len(bs))
 	r, err := f.Read(buf, 0)
 	assert.Nil(t, err)
 	assert.Equal(t, len(bs), r)
