@@ -17,6 +17,7 @@ package index
 import (
 	"BytesDB/config"
 	"BytesDB/core"
+	"BytesDB/index/btree"
 	"BytesDB/index/hash"
 	"os"
 	"path/filepath"
@@ -27,6 +28,7 @@ type IndexType = byte
 
 const (
 	Local_Hash IndexType = iota
+	BTree
 )
 
 type IndexManager struct {
@@ -123,6 +125,10 @@ func (im *IndexManager) initializeIndex(typ IndexType, id core.Session) {
 			panic(err)
 		}
 		im.indexes[id] = hash.NewLocalHashIndex(im.dataDir, id.Schema, id.Table)
+		return
+
+	case BTree:
+		im.indexes[id] = btree.NewBTree()
 		return
 
 	default:
