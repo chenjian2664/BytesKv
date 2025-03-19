@@ -29,6 +29,10 @@ func BuildDataFileName(seqNo int64) string {
 	return fmt.Sprintf("%10d"+DataFileSuffix, seqNo)
 }
 
+func BuildHitFileName(seqNo int64) string {
+	return fmt.Sprintf("%10d"+HitFileSuffix, seqNo)
+}
+
 func GetFileSeqNo(path string) int64 {
 	if !strings.HasPrefix(path, DataFileSuffix) {
 		panic("the file is not a bytesdb data file")
