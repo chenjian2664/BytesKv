@@ -9,7 +9,7 @@ The storage format is inspired by [Bitcask](https://riak.com/assets/bitcask-intr
 
 ### Server
 
-It support compitable protocol with Reids
+It supports a compatible protocol with Redis
 
 ## Contribute
 TBD.
