@@ -61,8 +61,9 @@ func NewLocalFileStorage(rootPath, schema, table string) (core.Storage, error) {
 		}
 		if strings.HasSuffix(entry.Name(), utils.DataFileSuffix) {
 			fileNames = append(fileNames, entry.Name())
+		} else if strings.HasSuffix(entry.Name(), utils.HitFileSuffix) {
+			// skip
 		} else {
-			// TODO: it is possible the dir contains other type file
 			panic("Unexpected file: " + entry.Name())
 		}
 	}
@@ -96,6 +97,8 @@ func (fio *fileStorage) createAndResetActiveFile() {
 	defer fio.mutex.Unlock()
 
 	old := fio.activeFile.Name()
+	_ = fio.Flush()
+
 	err := fio.Close()
 	if err != nil {
 		panic(err)
@@ -111,6 +114,9 @@ func (fio *fileStorage) createAndResetActiveFile() {
 		panic(err)
 	}
 	fio.activeFile = activeFile
+
+	// write hit file
+
 }
 
 func (fio *fileStorage) Read(buf core.Bytes, offset int64) (int, error) {
@@ -179,6 +185,7 @@ type PositionIterator struct {
 	cur     *os.File
 }
 
+// TODO: support read single file
 func (fpi *PositionIterator) Next() (*core.RecordPosition, core.Bytes, core.RecordType, error) {
 	if fpi.index >= len(fpi.files) {
 		return nil, nil, core.Deleted, io.EOF
