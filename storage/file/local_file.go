@@ -106,7 +106,8 @@ func (fio *fileStorage) createAndResetActiveFile() {
 
 	fio.oldFiles = append(fio.oldFiles, old)
 
-	nextSeq := utils.GetFileSeqNo(old) + 1
+	oldSeq := utils.GetFileSeqNo(old)
+	nextSeq := oldSeq + 1
 	activePath := path.Join(fio.rootPath, fio.schema, fio.tableName, utils.BuildDataFileName(nextSeq))
 	// note: append mode
 	activeFile, err := os.OpenFile(activePath, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0755)
@@ -116,7 +117,58 @@ func (fio *fileStorage) createAndResetActiveFile() {
 	fio.activeFile = activeFile
 
 	// write hit file
+	oldIt := &PositionIterator{
+		files:   []string{old},
+		dataDir: path.Join(fio.rootPath, fio.schema, fio.tableName),
+	}
 
+	hitPath := path.Join(fio.rootPath, fio.schema, fio.tableName, utils.BuildHitFileName(oldSeq))
+	hitFile, err := os.OpenFile(hitPath, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0755)
+	if err != nil {
+		panic(err)
+	}
+	defer hitFile.Close()
+
+	// TODO: save it in index
+	hits := make(map[string]core.RecordPosition)
+	for {
+		pos, key, typ, err := oldIt.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			panic(err)
+		}
+		if typ == core.Deleted {
+			delete(hits, string(key))
+		} else {
+			hits[string(key)] = *pos
+		}
+	}
+	keys := make([]string, 0)
+	for k := range hits {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		v := hits[k]
+		buf := make(core.Bytes, binary.MaxVarintLen64+len(k)+binary.MaxVarintLen64*2)
+		index := 0
+		n := binary.PutVarint(buf, int64(len(k)))
+		index += n
+		copy(buf[index:], k)
+		index += len(k)
+		n = binary.PutVarint(buf[index:], v.Position)
+		index += n
+		n = binary.PutVarint(buf[index:], int64(v.Size))
+		index += n
+
+		_, err := hitFile.Write(buf[:index])
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 func (fio *fileStorage) Read(buf core.Bytes, offset int64) (int, error) {
