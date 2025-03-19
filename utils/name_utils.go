@@ -20,7 +20,10 @@ import (
 	"strings"
 )
 
-const DataFileSuffix = ".data"
+const (
+	DataFileSuffix = ".data"
+	HitFileSuffix  = ".hit"
+)
 
 func BuildDataFileName(seqNo int64) string {
 	return fmt.Sprintf("%10d"+DataFileSuffix, seqNo)
