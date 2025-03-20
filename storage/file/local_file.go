@@ -153,18 +153,13 @@ func (fio *fileStorage) createAndResetActiveFile() {
 
 	for _, k := range keys {
 		v := hits[k]
-		buf := make(core.Bytes, binary.MaxVarintLen64+len(k)+binary.MaxVarintLen64*2)
-		index := 0
-		n := binary.PutVarint(buf, int64(len(k)))
-		index += n
-		copy(buf[index:], k)
-		index += len(k)
-		n = binary.PutVarint(buf[index:], v.Position)
-		index += n
-		n = binary.PutVarint(buf[index:], int64(v.Size))
-		index += n
 
-		_, err := hitFile.Write(buf[:index])
+		hitRecord := &core.HitRecord{
+			Key: core.Bytes(k),
+			Pos: v,
+		}
+
+		_, err := hitFile.Write(hitRecord.ToBytes())
 		if err != nil {
 			panic(err)
 		}
