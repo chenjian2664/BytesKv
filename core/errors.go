@@ -17,5 +17,6 @@ package core
 import "errors"
 
 var ErrKeyIsNil = errors.New("key is nil")
+var ErrKeyIsEmpty = errors.New("key is empty")
 var ErrKeyNotFound = errors.New("key not found")
 var ErrRecordPositionNil = errors.New("record position is nil")
