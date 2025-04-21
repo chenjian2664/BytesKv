@@ -42,7 +42,7 @@ func NewIndexManager(cfg *config.DBConfig) *IndexManager {
 	return &IndexManager{
 		indexes: make(map[core.Session]core.Index),
 		mutex:   sync.RWMutex{},
-		typ:     resolveIndexType(cfg.IndexType),
+		typ:     ResolveIndexType(cfg.IndexType),
 		dataDir: cfg.DataDir,
 	}
 }
@@ -88,7 +88,7 @@ func (im *IndexManager) Close() {
 	im.indexes = nil
 }
 
-func resolveIndexType(typ string) IndexType {
+func ResolveIndexType(typ string) IndexType {
 	// by default
 	if typ == "" {
 		return Local_Hash
