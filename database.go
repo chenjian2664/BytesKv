@@ -26,6 +26,7 @@ type Database struct {
 	options *config.DBConfig
 	im      *index.IndexManager
 	sm      *storage.StorageManager
+	seqNo 	uint64
 }
 
 func OpenBytesDb() *Database {

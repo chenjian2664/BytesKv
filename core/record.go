@@ -27,6 +27,7 @@ const (
 	Normal RecordType = iota
 	// Deleted the record is deleted
 	Deleted
+	TxnFinished
 )
 
 // Record the record that use between index and storage

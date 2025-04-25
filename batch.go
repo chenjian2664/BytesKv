@@ -17,12 +17,15 @@ package BytesDB
 import (
 	"BytesDB/core"
 	"BytesDB/index"
+	"encoding/binary"
+	"errors"
 	"sync"
+	"sync/atomic"
 )
 
 const NonTxnSeqNo uint64 = 0
 
-var TxnFinishKey = []byte("txn-f")
+var txnFinishKey = []byte("txn-f")
 
 type WriteBatchOptions struct {
 	MaxBatchSize int
@@ -68,10 +71,109 @@ func (wb *WriteBatch) Put(key core.Bytes, value core.Bytes) error {
 	return nil
 }
 
-func (wb *WriteBatch) Delete(key core.Bytes) error {
+func (wb *WriteBatch) Delete(session core.Session, key core.Bytes) error {
+	if len(key) == 0 {
+		return core.ErrKeyIsEmpty
+	}
+
+	wb.lock.Lock()
+	defer wb.lock.Unlock()
+
+	pos, _ := wb.db.im.Get(session, key)
+	if pos == nil {
+		if wb.pendingWrites[string(key)] != nil {
+			delete(wb.pendingWrites, string(key))
+		}
+		return nil
+	}
+
+	// save log record
+	record := &core.Record{
+		Key:  key,
+		Type: core.Deleted,
+	}
+	wb.pendingWrites[string(key)] = record
 	return nil
 }
 
-func (wb *WriteBatch) Commit() error {
+// Commit commit transaction, write data
+func (wb *WriteBatch) Commit(session core.Session) error {
+	wb.lock.Lock()
+	defer wb.lock.Unlock()
+
+	if len(wb.pendingWrites) == 0 {
+		return nil
+	}
+
+	if len(wb.pendingWrites) > wb.options.MaxBatchSize {
+		return errors.New("can commit, too large")
+	}
+
+	wb.lock.Lock()
+	defer wb.lock.Unlock()
+
+	positions := make(map[string]*core.RecordPosition)
+	// Get transaction sequence number
+	seqNo := atomic.AddUint64(&wb.db.seqNo, 1)
+	for _, record := range wb.pendingWrites {
+		key := logRecordKeyWithSeq(record.Key, seqNo)
+		pos, err := appendLogRecord(&core.Record{
+			Key:   key,
+			Value: record.Value,
+			Type:  record.Type,
+		})
+		if err != nil {
+			return err
+		}
+		positions[string(record.Key)] = pos
+	}
+
+	commited := &core.Record{
+		Key:  logRecordKeyWithSeq(txnFinishKey, seqNo),
+		Type: core.TxnFinished,
+	}
+
+	if _, err := appendLogRecord(commited); err != nil {
+		return err
+	}
+
+	// TODO: Flush according to the config
+
+	// Update memo index
+	for _, record := range wb.pendingWrites {
+
+		pos := positions[string(record.Key)]
+		if record.Type == core.Normal {
+			wb.db.im.Put(session, record.Key, pos)
+		}
+		if record.Type == core.Deleted {
+			wb.db.im.Delete(session, record.Key)
+		}
+	}
+
+	// TODO: update writing size
+
+	// Clean pending writes
+	wb.pendingWrites = make(map[string]*core.Record)
 	return nil
+}
+
+func logRecordKeyWithSeq(key core.Bytes, seqNo uint64) core.Bytes {
+	seq := make(core.Bytes, binary.MaxVarintLen64)
+	n := binary.PutUvarint(seq[:], seqNo)
+	encKey := make(core.Bytes, n+len(key))
+	copy(encKey[:n], seq[:n])
+	copy(encKey[n:], key)
+	return encKey
+}
+
+// Get actual key
+func parseLogRecordKey(key core.Bytes) (core.Bytes, uint64) {
+	seqNo, n := binary.Uvarint(key)
+	realKey := key[n:]
+	return realKey, seqNo
+}
+
+func appendLogRecord(record *core.Record) (*core.RecordPosition, error) {
+	return nil, nil
 }
